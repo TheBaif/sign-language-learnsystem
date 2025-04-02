@@ -1,74 +1,66 @@
 <template>
-  <view 
-    class="home_container"
-    @touchstart="handleTouchStart"
-    @touchend="handleTouchEnd"
-  >
-    <view class="home_top">
-      <image class="avatar" :src="userInfo.userPic || '/static/avatar.png'" @tap="navigateToUserProfile"></image>
+  <view class="container" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
+    <view class="header">
+      <image class="avatar" :src="userInfo.userPic || '/static/avatar.png'" @tap="navigateToUserProfile"/>
     </view>
     
-    <!-- 主要内容区 -->
-    <view class="main_content">
-      <view class="welcome_text">
+    <view class="content">
+      <view class="welcome">
         <text>欢迎使用手语学习应用</text>
-        <text class="tip_text">向上滑动搜索，点击下方按钮开始学习</text>
+        <text class="tip">向上滑动搜索,点击下方按钮开始学习</text>
       </view>
       
-      <!-- 学习进度概览 -->
-      <view class="progress_overview">
-        <view class="progress_header">
-          <text class="progress_title">学习进度</text>
-          <text class="view_more" @tap="navigateToLearningProgress">查看详情 ></text>
+      <view class="progress-wrapper">
+        <view class="progress-header">
+          <text class="title">学习进度</text>
+          <text class="more" @tap="navigateToLearningProgress">查看详情 ></text>
         </view>
         
-        <view v-if="loadingProgress" class="progress_loading">
-          <view class="loader"></view>
+        <view v-if="loadingProgress" class="progress-loading">
+          <view class="loader"/>
           <text>加载中...</text>
         </view>
         
-        <view v-else class="progress_content">
-          <view class="progress_stats">
-            <view class="stat_item">
-              <text class="stat_value">{{ progressData.totalSigns || 0 }}</text>
-              <text class="stat_label">已学习</text>
+        <view v-else class="progress-content">
+          <view class="stats">
+            <view class="stat-item">
+              <text class="value">{{ progressData.totalSigns || 0 }}</text>
+              <text class="label">已学习</text>
             </view>
-            <view class="stat_item">
-              <text class="stat_value">{{ progressData.masteredSigns || 0 }}</text>
-              <text class="stat_label">已掌握</text>
+            <view class="stat-item">
+              <text class="value">{{ progressData.masteredSigns || 0 }}</text>
+              <text class="label">已掌握</text>
             </view>
-            <view class="stat_item">
-              <text class="stat_value">{{ formatProficiency(progressData.averageProficiency) }}</text>
-              <text class="stat_label">掌握度</text>
+            <view class="stat-item">
+              <text class="value">{{ formatProficiency(progressData.averageProficiency) }}</text>
+              <text class="label">掌握度</text>
             </view>
           </view>
           
-          <!-- 进度条 -->
-          <view class="progress_bar_section">
-            <view class="progress_bar_label">
+          <view class="bar-section">
+            <view class="bar-label">
               <text>学习进度</text>
               <text>{{ calculateProgressPercentage() }}%</text>
             </view>
-            <view class="progress_bar_bg">
+            <view class="bar-bg">
               <view 
-                class="progress_bar_fill"
+                class="bar-fill"
                 :style="{ width: calculateProgressPercentage() + '%' }"
-              ></view>
+              />
             </view>
           </view>
           
-          <!-- 学习建议 -->
-          <view v-if="progressData.recommendedNextSigns && progressData.recommendedNextSigns.length > 0" class="recommended_section">
-            <text class="recommended_title">推荐学习</text>
-            <view class="recommended_items">
+          <view v-if="progressData.recommendedNextSigns && progressData.recommendedNextSigns.length" class="recommend">
+            <text class="recommend-title">推荐学习</text>
+            <view class="recommend-items">
               <view 
                 v-for="(item, index) in progressData.recommendedNextSigns.slice(0, 2)" 
                 :key="index"
-                class="recommended_item"
+                class="recommend-item"
                 @tap="goToSignDetail(item)"
               >
-                <text class="item_name">{{ item.name }}</text>
-                <text class="item_pinyin">{{ item.pinyin }}</text>
+                <text class="name">{{ item.name }}</text>
+                <text class="pinyin">{{ item.pinyin }}</text>
               </view>
             </view>
           </view>
@@ -76,9 +68,9 @@
       </view>
     </view>
     
-    <view class="navigation1">
-      <button class="left_nav1_btn" @tap="navigateToVocabulary">学习</button>
-      <button class="right_nav1_btn" @tap="navigateToPractice">练习</button>
+    <view class="nav">
+      <button class="nav-btn study-btn" @tap="navigateToVocabulary">学习</button>
+      <button class="nav-btn practice-btn" @tap="navigateToPractice">练习</button>
     </view>
   </view>
 </template>
@@ -314,104 +306,104 @@ export default {
 </script>
 
 <style lang="scss">
-.home_container {
-  width: 100%;
+// 把一些通用的样式属性定义为变量
+$primary-color: #3c8999;
+$light-color: #f8f8f8;
+$text-color: #333;
+$disabled-color: #ccc;
+$border-radius: 16rpx;
+$box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+
+.container {
   height: 100vh;
-  background: #ffffff;
   display: flex;
   flex-direction: column;
 
-  .home_top {
-    width: 100%;
-    height: 150rpx;
-    position: relative;
-    background: #f8f8f8;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
-
+  .header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;   
+    padding: 30rpx;
+    background-color: $light-color;
+    box-shadow: $box-shadow;
+    
     .avatar {
       width: 100rpx;
       height: 100rpx;
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
       border-radius: 50%;
-      margin-right: 30rpx;
-      border: 2rpx solid #ddd;
+      border: 2rpx solid #ddd; 
     }
   }
 
-  .main_content {
+  .content {
     flex: 1;
-    display: flex;
-    flex-direction: column;
     padding: 30rpx;
     overflow-y: auto;
     
-    .welcome_text {
+    .welcome {
       text-align: center;
       margin-bottom: 40rpx;
       
       text {
-        font-size: 36rpx;
-        color: #333;
         display: block;
-        margin-bottom: 20rpx;
-      }
-      
-      .tip_text {
-        font-size: 26rpx;
-        color: #999;
+        color: $text-color;
+        
+        &:first-child {  
+          font-size: 36rpx;
+          margin-bottom: 20rpx;
+        }
+        
+        &.tip {
+          font-size: 26rpx;
+          color: #999;  
+        }
       }
     }
     
-    .progress_overview {
-      background-color: #fff;
-      border-radius: 16rpx;
+    .progress-wrapper {
       padding: 30rpx;
-      margin-bottom: 30rpx;
+      background-color: #fff;
+      border-radius: $border-radius;
       box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
       
-      .progress_header {
+      .progress-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20rpx;
         
-        .progress_title {
+        .title {
           font-size: 32rpx;
           font-weight: bold;
-          color: #333;
         }
         
-        .view_more {
+        .more {
           font-size: 26rpx;
-          color: #3C8999;
+          color: $primary-color;
         }
       }
-      
-      .progress_loading {
-        height: 150rpx;
+
+      .progress-loading {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        
+        height: 150rpx;
+
         .loader {
           width: 40rpx;
           height: 40rpx;
+          margin-bottom: 15rpx; 
           border-radius: 50%;
-          border: 4rpx solid rgba(60, 137, 153, 0.2);
-          border-top-color: #3C8999;
-          animation: spin 1s infinite linear;
-          margin-bottom: 15rpx;
+          border: 4rpx solid rgba($primary-color, 0.2);
+          border-top-color: $primary-color;
+          animation: spin 1s linear infinite;
         }
         
         @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          to {
+            transform: rotate(360deg);
+          }  
         }
         
         text {
@@ -419,94 +411,85 @@ export default {
           color: #999;
         }
       }
-      
-      .progress_content {
-        .progress_stats {
+
+      .progress-content {
+        .stats {
           display: flex;
-          justify-content: space-between;
+          justify-content: space-around;
           margin-bottom: 30rpx;
-          
-          .stat_item {
-            flex: 1;
-            text-align: center;
-            padding: 0 10rpx;
-            
-            .stat_value {
+
+          .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;  
+
+            .value {
+              margin-bottom: 8rpx; 
               font-size: 36rpx;
               font-weight: bold;
-              color: #3C8999;
-              display: block;
-              margin-bottom: 8rpx;
+              color: $primary-color; 
             }
-            
-            .stat_label {
+
+            .label {
               font-size: 24rpx;
               color: #999;
             }
           }
         }
-        
-        .progress_bar_section {
+
+        .bar-section {
           margin-bottom: 30rpx;
-          
-          .progress_bar_label {
+
+          .bar-label {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10rpx;
-            
-            text {
-              font-size: 26rpx;
-              color: #666;
-            }
+            font-size: 26rpx;
+            color: #666;
           }
-          
-          .progress_bar_bg {
+
+          .bar-bg {
             height: 16rpx;
             background-color: #f0f0f0;
             border-radius: 8rpx;
             overflow: hidden;
-            
-            .progress_bar_fill {
+
+            .bar-fill {
               height: 100%;
-              background: linear-gradient(to right, #3C8999, #55a5b5);
+              background: linear-gradient(to right, $primary-color, #55a5b5);
               border-radius: 8rpx;
               transition: width 0.5s;
             }
           }
         }
-        
-        .recommended_section {
-          .recommended_title {
+
+        .recommend {
+          .recommend-title {
+            margin-bottom: 15rpx;
             font-size: 28rpx;
             color: #666;
-            margin-bottom: 15rpx;
-            display: block;
           }
-          
-          .recommended_items {
+
+          .recommend-items {
             display: flex;
-            flex-wrap: wrap;
             gap: 20rpx;
-            
-            .recommended_item {
+
+            .recommend-item {
               flex: 1;
-              min-width: 45%;
-              background-color: rgba(60, 137, 153, 0.1);
               padding: 15rpx 20rpx;
+              background-color: rgba($primary-color, 0.1);
               border-radius: 12rpx;
               
               &:active {
-                background-color: rgba(60, 137, 153, 0.2);
+                background-color: rgba($primary-color, 0.2);
               }
-              
-              .item_name {
-                font-size: 30rpx;
-                color: #333;
-                display: block;
+
+              .name {
                 margin-bottom: 6rpx;
+                font-size: 30rpx;  
               }
-              
-              .item_pinyin {
+
+              .pinyin {
                 font-size: 24rpx;
                 color: #999;
               }
@@ -517,29 +500,31 @@ export default {
     }
   }
 
-  .navigation1 {
+  .nav {
     display: flex;
-    background: #f8f8f8;
-    height: 120rpx;
-    align-items: center;
     justify-content: space-around;
+    align-items: center;
+    height: 120rpx;
     padding: 0 20rpx;
+    background: $light-color;
     box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.1);
-
-    .left_nav1_btn,
-    .right_nav1_btn {
-      background-color: #3C8999;
+    
+    .nav-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center; 
       width: 250rpx;
       height: 80rpx;
-      padding: 0;
-      white-space: nowrap;
-      color: white;
-      font-size: 32rpx;
-      text-align: center;
-      line-height: 80rpx;
+      color: #fff;
+      font-size: 32rpx; 
+      background-color: $primary-color;
       border-radius: 40rpx;
-      box-shadow: 0 4rpx 8rpx rgba(60, 137, 153, 0.2);
+      box-shadow: 0 4rpx 8rpx rgba($primary-color, 0.2);
+      
+      &::after {
+        border: none;
+      }
     }
   }
-}
+}  
 </style>

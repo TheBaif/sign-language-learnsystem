@@ -3,11 +3,7 @@
     <!-- Header with Title -->
     <view class="subcategory-header">
       <view class="header-top">
-        <view class="back-button" @tap="navigateBack"><
-        </view>
         <text class="header-title">{{ parentName || '未命名词库' }}</text>
-        <view class="search-button" @tap="navigateToSearch">搜索
-        </view>
       </view>
     </view>
     

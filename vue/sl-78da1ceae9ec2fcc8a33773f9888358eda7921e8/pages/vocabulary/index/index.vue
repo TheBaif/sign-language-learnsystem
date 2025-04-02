@@ -3,12 +3,7 @@
     <!-- Header with Title and Search -->
     <view class="vocabulary-header">
       <view class="header-top">
-        <view class="back-button" @tap="navigateBack"><
-        </view>
         <text class="header-title">手语词库</text>
-        <view class="search-button" @tap="navigateToSearch">
-          搜索
-        </view>
       </view>
       
       <view class="header-subtitle">

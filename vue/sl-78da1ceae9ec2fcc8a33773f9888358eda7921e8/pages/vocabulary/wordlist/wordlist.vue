@@ -3,13 +3,7 @@
     <!-- Header with Title -->
     <view class="wordlist-header">
       <view class="header-top">
-        <view class="back-button" @tap="navigateBack">
-          <text class="iconfont">&#xe679;</text>
-        </view>
         <text class="header-title">{{ childName || parentName || '词汇列表' }}</text>
-        <view class="search-button" @tap="navigateToSearch">
-          <text class="iconfont">&#xe61c;</text>
-        </view>
       </view>
       
       <view class="header-subtitle" v-if="childName && parentName">
@@ -55,7 +49,6 @@
               <picker :value="sortIndex" :range="sortOptions" @change="changeSort">
                 <view class="sort-selector">
                   <text>{{ sortOptions[sortIndex] }}</text>
-                  <text class="iconfont">&#xe64b;</text>
                 </view>
               </picker>
             </view>
@@ -76,7 +69,6 @@
                   class="word-image"
                 ></image>
                 <view class="word-video-badge" v-if="item.wordVideoSrc">
-                  <text class="iconfont">&#xe666;</text>
                 </view>
               </view>
               <view class="word-info">
@@ -649,7 +641,6 @@ export default {
               bottom: 10rpx;
               width: 40rpx;
               height: 40rpx;
-              background-color: rgba(60, 137, 153, 0.8);
               border-radius: 20rpx;
               display: flex;
               align-items: center;

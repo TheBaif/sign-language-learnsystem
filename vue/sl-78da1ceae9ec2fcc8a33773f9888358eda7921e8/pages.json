@@ -88,20 +88,6 @@
 			}
 		},
 		{
-			"path" : "pages/recognition/recognition",
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
-			}
-		},
-		{
-			"path" : "pages/practice-verification/index",
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
-			}
-		},
-		{
 			"path" : "pages/learning-progress/learning-progress",
 			"style" : 
 			{
