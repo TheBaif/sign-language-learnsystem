@@ -4,7 +4,7 @@
       <image class="avatar" :src="userInfo.userPic || '/static/avatar.png'" @tap="navigateToUserProfile"/>
     </view>
     
-    <view class="content">
+    <view class="content" >
       <view class="welcome">
         <text>欢迎使用手语学习应用</text>
         <text class="tip">向上滑动搜索,点击下方按钮开始学习</text>
