@@ -12,7 +12,7 @@
           </view>
         </view>
         <view class="search-button" @tap="navigateToSearch">
-          搜索
+          
         </view>
       </view>
     </view>
@@ -1162,12 +1162,12 @@ $transition-duration: 0.3s;
       
       .page-info {
         background: rgba($primary-color, 0.1);
-        padding: 10rpx 30rpx;
+        padding: 8rpx 25rpx;
         border-radius: 25rpx;
         margin-bottom: 20rpx;
         
         text {
-          font-size: 26rpx;
+          font-size: 28rpx;
           color: $primary-color;
           font-weight: bold;
         }
@@ -1189,8 +1189,8 @@ $transition-duration: 0.3s;
           margin: 0 5rpx;
           transition: all $transition-duration;
           
-          .btn-text {
-            font-size: 20rpx;
+          text {
+            font-size: 26rpx;
           }
           
           &:active:not(.disabled) {
@@ -1205,7 +1205,9 @@ $transition-duration: 0.3s;
           
           &.first-btn, &.last-btn {
             background: rgba($primary-color, 0.8);
-            .btn-text {
+            padding: 10rpx 20rpx;
+            
+            text {
               font-size: 24rpx;
             }
           }

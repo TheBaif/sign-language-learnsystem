@@ -3,9 +3,6 @@
     <!-- Enhanced Header with Background Gradient -->
     <view class="subcategory-header">
       <view class="header-content">
-        <view class="back-button" @tap="navigateBack">
-          <text class="back-icon">&#xe679;</text>
-        </view>
         <view class="title-container">
           <text class="header-title">{{ parentName || '未命名词库' }}</text>
           <view class="breadcrumb" v-if="parentName">
@@ -15,7 +12,7 @@
           </view>
         </view>
         <view class="search-button" @tap="navigateToSearch">
-          <text class="search-icon">&#xe665;</text>
+			搜索
         </view>
       </view>
     </view>
@@ -129,7 +126,6 @@
     
     <!-- Fixed Action Button for Navigation -->
     <view class="floating-action-button" @tap="navigateToAllWords">
-      <text class="fab-icon">&#xe664;</text>
       <text class="fab-text">查看词汇</text>
     </view>
   </view>

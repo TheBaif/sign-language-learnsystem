@@ -76,6 +76,7 @@
 </template>
 <script>
 import http from '@/utils/request.js'
+import detailHelper from '@/utils/detailHelper.js'
 export default {
   data() {
     return {
@@ -288,27 +289,64 @@ export default {
 </script>
 
 <style lang="scss">
+// Variables
+$primary-color: #3C8999;
+$primary-light: #55a5b5;
+$primary-dark: #2a6b78;
+$accent-color: #FF9B50;
+$text-color: #333;
+$text-light: #666;
+$text-lighter: #999;
+$background-color: #f8f8f8;
+$card-background: #ffffff;
+$border-radius-sm: 10rpx;
+$border-radius-md: 20rpx;
+$border-radius-lg: 30rpx;
+$box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+$transition-duration: 0.3s;
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(40rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
 .detail-container {
   min-height: 100vh;
-  background-color: #f8f8f8;
-  padding-bottom: 40rpx;
+  background-color: $background-color;
+  position: relative;
   
   .detail-scroll {
     height: 100vh;
   }
   
+  // Enhanced Detail Item Card
   .detail-item {
     margin: 30rpx;
-    border-radius: 16rpx;
+    border-radius: $border-radius-lg;
     overflow: hidden;
-    box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
-    background-color: #fff;
+    box-shadow: 0 8rpx 25rpx rgba(0, 0, 0, 0.1);
+    background-color: $card-background;
+    position: relative;
+    animation: fadeIn 0.5s ease-out;
     
+    // Enhanced Header
     .header {
       padding: 40rpx 30rpx;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
       position: relative;
-      background: linear-gradient(to right, #f6f6f6, #ffffff);
+      background: linear-gradient(to right, #f9f9f9, $card-background);
       
       &::before {
         content: '';
@@ -318,37 +356,43 @@ export default {
         transform: translateY(-50%);
         width: 8rpx;
         height: 60%;
-        background-color: #3C8999;
+        background: linear-gradient(to bottom, $primary-color, $primary-light);
         border-radius: 0 4rpx 4rpx 0;
       }
       
       .title {
         font-size: 42rpx;
-        color: #333;
+        color: $text-color;
         font-weight: bold;
         margin-bottom: 15rpx;
         display: block;
+        padding-left: 25rpx;
+        letter-spacing: 1rpx;
       }
       
       .pinyin {
         font-size: 32rpx;
-        color: #666;
+        color: $text-light;
         display: block;
         font-style: italic;
+        padding-left: 25rpx;
       }
     }
     
+    // Enhanced Content Section
     .content {
-      padding: 30rpx;
+      padding: 40rpx 30rpx;
       
+      // Gesture Section
       .gesture-section {
-        margin-bottom: 40rpx;
+        margin-bottom: 50rpx;
+        animation: slideInUp 0.6s ease-out;
         
         .section-title {
-          font-size: 34rpx;
-          color: #333;
+          font-size: 36rpx;
+          color: $text-color;
           font-weight: bold;
-          margin-bottom: 20rpx;
+          margin-bottom: 25rpx;
           display: block;
           position: relative;
           padding-left: 24rpx;
@@ -360,66 +404,310 @@ export default {
             top: 50%;
             transform: translateY(-50%);
             width: 10rpx;
-            height: 32rpx;
-            background-color: #3C8999;
+            height: 36rpx;
+            background-color: $primary-color;
             border-radius: 5rpx;
           }
         }
         
         .gesture-steps {
           background-color: #f9f9f9;
-          border-radius: 12rpx;
-          padding: 20rpx;
+          border-radius: $border-radius-lg;
+          padding: 25rpx;
+          box-shadow: inset 0 2rpx 10rpx rgba(0, 0, 0, 0.03);
           
           .step {
-            font-size: 30rpx;
-            color: #444;
+            font-size: 32rpx;
+            color: $text-color;
             line-height: 1.6;
-            padding: 15rpx 10rpx;
+            padding: 20rpx 15rpx;
             display: flex;
             align-items: center;
             
             &:not(:last-child) {
-              border-bottom: 1px dashed #e0e0e0;
+              border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
             }
             
             &::before {
               content: '•';
               margin-right: 15rpx;
-              color: #3C8999;
-              font-size: 36rpx;
+              color: $primary-color;
+              font-size: 40rpx;
+              font-weight: bold;
             }
           }
         }
       }
       
+      // Media Content Section
       .media-content {
+        animation: slideInUp 0.7s ease-out;
+        
+        // Enhanced Image Display
         .sign-image {
           width: 100%;
           height: 500rpx;
-          margin-bottom: 30rpx;
-          border-radius: 12rpx;
-          box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+          margin-bottom: 40rpx;
+          border-radius: $border-radius-lg;
+          box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.12);
           background-color: #f5f5f5;
-          transition: all 0.3s ease;
+          transition: all 0.4s ease;
+          object-fit: contain;
+          overflow: hidden;
+          position: relative;
           
           &:active {
             transform: scale(0.98);
+            box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.08);
+          }
+          
+          &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+              to bottom,
+              rgba(0, 0, 0, 0.02),
+              rgba(0, 0, 0, 0)
+            );
+            pointer-events: none;
           }
         }
         
+        // Enhanced Video Display
         .sign-video {
           width: 100%;
-          height: 500rpx;
-          margin-bottom: 20rpx;
-          border-radius: 12rpx;
-          box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+          height: 520rpx;
+          margin-bottom: 40rpx;
+          border-radius: $border-radius-lg;
+          box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.12);
+          overflow: hidden;
+          background-color: #000;
+        }
+      }
+      
+      // Category & Difficulty Info
+      .metadata-section {
+        margin-top: 40rpx;
+        padding-top: 30rpx;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20rpx;
+        animation: slideInUp 0.8s ease-out;
+        
+        .metadata-item {
+          flex: 1;
+          min-width: 45%;
+          background-color: #f9f9f9;
+          padding: 20rpx;
+          border-radius: $border-radius-md;
+          
+          .metadata-label {
+            font-size: 24rpx;
+            color: $text-lighter;
+            margin-bottom: 8rpx;
+            display: block;
+          }
+          
+          .metadata-value {
+            font-size: 28rpx;
+            color: $text-color;
+            font-weight: 500;
+          }
+          
+          &.difficulty {
+            .metadata-value {
+              display: inline-block;
+              padding: 4rpx 16rpx;
+              border-radius: 20rpx;
+              font-size: 26rpx;
+              
+              &.beginner {
+                background-color: rgba(82, 196, 26, 0.1);
+                color: #52c41a;
+              }
+              
+              &.intermediate {
+                background-color: rgba(250, 173, 20, 0.1);
+                color: #faad14;
+              }
+              
+              &.advanced {
+                background-color: rgba(245, 34, 45, 0.1);
+                color: #f5222d;
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // Related Signs Section
+    .related-section {
+      margin: 0 30rpx 40rpx;
+      
+      .related-title {
+        font-size: 36rpx;
+        color: $text-color;
+        font-weight: bold;
+        margin-bottom: 25rpx;
+        display: block;
+        position: relative;
+        padding-left: 24rpx;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 10rpx;
+          height: 36rpx;
+          background-color: $primary-color;
+          border-radius: 5rpx;
+        }
+      }
+      
+      .related-list {
+        display: flex;
+        overflow-x: auto;
+        padding: 10rpx 0 20rpx;
+        margin: 0 -10rpx;
+        
+        &::-webkit-scrollbar {
+          height: 6rpx;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background-color: rgba(0, 0, 0, 0.1);
+          border-radius: 3rpx;
+        }
+        
+        .related-item {
+          min-width: 200rpx;
+          margin: 0 10rpx;
+          background-color: #fff;
+          border-radius: $border-radius-md;
+          overflow: hidden;
+          box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+          transition: transform 0.3s;
+          
+          &:active {
+            transform: scale(0.97);
+          }
+          
+          .related-image {
+            width: 200rpx;
+            height: 150rpx;
+            object-fit: cover;
+          }
+          
+          .related-name {
+            padding: 10rpx;
+            font-size: 26rpx;
+            color: $text-color;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+      }
+    }
+    
+    // Action Buttons
+    .action-buttons {
+      display: flex;
+      gap: 20rpx;
+      padding: 0 30rpx 40rpx;
+      
+      .action-btn {
+        flex: 1;
+        height: 90rpx;
+        line-height: 90rpx;
+        text-align: center;
+        border-radius: 45rpx;
+        font-size: 30rpx;
+        font-weight: bold;
+        transition: all $transition-duration;
+        
+        &.practice-btn {
+          background: linear-gradient(to right, $primary-color, $primary-light);
+          color: #fff;
+          box-shadow: 0 8rpx 16rpx rgba($primary-color, 0.3);
+          
+          &:active {
+            transform: scale(0.98);
+            box-shadow: 0 4rpx 8rpx rgba($primary-color, 0.2);
+          }
+        }
+        
+        &.favorite-btn {
+          background-color: #f0f0f0;
+          color: $text-color;
+          
+          &:active {
+            background-color: #e6e6e6;
+          }
+          
+          &.active {
+            background-color: rgba(255, 155, 80, 0.1);
+            color: $accent-color;
+          }
         }
       }
     }
   }
   
-  .loading-section {
+  // Navigation Buttons
+  .navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 30rpx;
+    
+    .nav-button {
+      padding: 20rpx 40rpx;
+      background-color: $primary-color;
+      color: #fff;
+      font-size: 28rpx;
+      border-radius: 40rpx;
+      box-shadow: 0 4rpx 10rpx rgba($primary-color, 0.3);
+      
+      &:active {
+        transform: scale(0.98);
+        box-shadow: 0 2rpx 5rpx rgba($primary-color, 0.2);
+      }
+      
+      &.disabled {
+        background-color: #cccccc;
+        box-shadow: none;
+      }
+    }
+  }
+  
+  // Empty State
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 200rpx;
+    background-color: #f5f5f5;
+    border-radius: $border-radius-lg;
+    margin-bottom: 30rpx;
+    
+    text {
+      color: $text-lighter;
+      font-size: 28rpx;
+    }
+  }
+  
+  // Loading & Error States
+  .loading-section, .error-section {
     height: 400rpx;
     display: flex;
     flex-direction: column;
@@ -427,15 +715,15 @@ export default {
     align-items: center;
     background-color: #fff;
     margin: 30rpx;
-    border-radius: 16rpx;
+    border-radius: $border-radius-lg;
     box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
     
     .loader {
       width: 70rpx;
       height: 70rpx;
       border-radius: 50%;
-      border: 4rpx solid rgba(60, 137, 153, 0.2);
-      border-top-color: #3C8999;
+      border: 4rpx solid rgba($primary-color, 0.1);
+      border-top-color: $primary-color;
       animation: spin 1s infinite linear;
       margin-bottom: 30rpx;
     }
@@ -446,74 +734,77 @@ export default {
     }
     
     text {
-      color: #999;
+      color: $text-lighter;
       font-size: 30rpx;
     }
   }
   
   .error-section {
-    height: 400rpx;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: #fff;
-    margin: 30rpx;
-    border-radius: 16rpx;
-    box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
-    
     text {
       color: #ff6b6b;
-      font-size: 30rpx;
-      margin-bottom: 30rpx;
     }
     
     .retry-btn {
+      margin-top: 30rpx;
       padding: 15rpx 40rpx;
-      background-color: #3C8999;
+      background-color: $primary-color;
       color: #fff;
       font-size: 28rpx;
       border-radius: 40rpx;
-      box-shadow: 0 4rpx 10rpx rgba(60, 137, 153, 0.3);
+      box-shadow: 0 4rpx 10rpx rgba($primary-color, 0.3);
     }
   }
   
-  .navigation-buttons {
+  // Floating Action Button
+  .floating-action-button {
+    position: fixed;
+    right: 30rpx;
+    bottom: 50rpx;
+    width: 110rpx;
+    height: 110rpx;
+    border-radius: 55rpx;
+    background: linear-gradient(135deg, $primary-color, $primary-light);
     display: flex;
-    justify-content: space-between;
-    padding: 30rpx;
-    
-    .nav-button {
-      padding: 20rpx 40rpx;
-      background-color: #3C8999;
-      color: #fff;
-      font-size: 28rpx;
-      border-radius: 40rpx;
-      box-shadow: 0 4rpx 10rpx rgba(60, 137, 153, 0.3);
-      
-      &:active {
-        transform: scale(0.98);
-      }
-      
-      &.disabled {
-        background-color: #cccccc;
-        box-shadow: none;
-      }
-    }
-  }
-  
-  .empty-state {
-    display: flex;
-    justify-content: center;
     align-items: center;
-    height: 200rpx;
-    background-color: #f5f5f5;
-    border-radius: 12rpx;
-    margin-bottom: 30rpx;
+    justify-content: center;
+    box-shadow: 0 8rpx 20rpx rgba($primary-color, 0.4);
+    z-index: 100;
+    animation: pulse 3s infinite ease-in-out;
     
-    text {
-      color: #999;
-      font-size: 28rpx;
+    .fab-icon {
+      font-size: 50rpx;
+      color: #fff;
+    }
+    
+    &:active {
+      transform: scale(0.95);
+      box-shadow: 0 4rpx 10rpx rgba($primary-color, 0.3);
+    }
+  }
+}
+
+/* Mobile landscape and tablet adjustments */
+@media screen and (min-width: 768px) {
+  .detail-container {
+    .detail-item {
+      max-width: 960rpx;
+      margin: 40rpx auto;
+      
+      .content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30rpx;
+        
+        .gesture-section {
+          flex: 1;
+          min-width: 45%;
+        }
+        
+        .media-content {
+          flex: 1;
+          min-width: 45%;
+        }
+      }
     }
   }
 }

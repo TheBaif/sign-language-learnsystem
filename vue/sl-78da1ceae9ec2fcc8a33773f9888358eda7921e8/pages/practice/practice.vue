@@ -537,165 +537,284 @@ export default {
 </script>
 
 <style lang="scss">
+// Define variables for consistent theming
+$primary-color: #3C8999;
+$primary-light: #55a5b5;
+$primary-dark: #2a6b78;
+$accent-color: #FF9B50;
+$success-color: #52c41a;
+$error-color: #ff4d4f;
+$neutral-color: #f0f0f0;
+$text-color: #333;
+$text-light: #666;
+$text-lighter: #999;
+$background-color: #f5f5f5;
+$card-background: #ffffff;
+$border-radius-sm: 12rpx;
+$border-radius-md: 20rpx;
+$border-radius-lg: 30rpx;
+$box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
+$transition-duration: 0.3s;
+
+// Animations
+@keyframes floating {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInBottom {
+  from { opacity: 0; transform: translateY(60rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes correctAnswer {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes wrongAnswer {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-10rpx); }
+  50% { transform: translateX(10rpx); }
+  75% { transform: translateX(-10rpx); }
+  100% { transform: translateX(0); }
+}
+
 .practice-container {
   min-height: 100vh;
-  background-color: #f8f8f8;
-  display: flex;
-  flex-direction: column;
+  background-color: $background-color;
+  position: relative;
   
+  // Background elements for visual interest
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40vh;
+    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+    border-bottom-left-radius: 40rpx;
+    border-bottom-right-radius: 40rpx;
+    z-index: 0;
+  }
+  
+  // Header with progress bar
   .practice-header {
-    background-color: #fff;
-    padding: 20rpx 30rpx 30rpx;
-    box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+    position: relative;
+    padding: 40rpx 30rpx 30rpx;
+    z-index: 1;
     
     .header-top {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 20rpx;
-      
-      .back-button {
-        width: 60rpx;
-        height: 60rpx;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        
-        .iconfont {
-          font-size: 36rpx;
-          color: #333;
-        }
-      }
+      align-items: center;
+      margin-bottom: 25rpx;
       
       .header-title {
-        font-size: 34rpx;
+        font-size: 38rpx;
         font-weight: bold;
-        color: #333;
+        color: #fff;
+        text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
       }
       
       .score-display {
-        background-color: #3C8999;
-        color: #fff;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5rpx);
         border-radius: 30rpx;
-        padding: 6rpx 20rpx;
+        padding: 12rpx 25rpx;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
         
         .score-text {
-          font-size: 30rpx;
+          font-size: 32rpx;
           font-weight: bold;
+          color: #fff;
         }
       }
     }
     
     .progress-bar {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(5rpx);
+      border-radius: 16rpx;
+      padding: 15rpx 20rpx;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+      
       .progress-text {
         display: flex;
         justify-content: flex-end;
         margin-bottom: 10rpx;
         
         text {
-          font-size: 24rpx;
-          color: #999;
+          font-size: 26rpx;
+          color: rgba(255, 255, 255, 0.9);
         }
       }
       
       .progress-track {
-        height: 10rpx;
-        background-color: #f0f0f0;
-        border-radius: 5rpx;
+        height: 12rpx;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 6rpx;
         overflow: hidden;
         
         .progress-fill {
           height: 100%;
-          background-color: #3C8999;
-          border-radius: 5rpx;
-          transition: width 0.3s;
+          background: #fff;
+          border-radius: 6rpx;
+          transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
       }
     }
   }
   
+  // Question Area
   .question-area {
-    padding: 30rpx;
+    padding: 20rpx 30rpx;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.5s ease-out;
     
     .question-card {
-      background-color: #fff;
-      border-radius: 20rpx;
+      background-color: $card-background;
+      border-radius: $border-radius-lg;
       padding: 30rpx;
-      box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+      box-shadow: $box-shadow;
+      overflow: hidden;
       
       .question-image {
         width: 100%;
         height: 400rpx;
+        border-radius: $border-radius-md;
+        object-fit: contain;
+        background-color: #f8f8f8;
         margin-bottom: 30rpx;
-        background-color: #f5f5f5;
-        border-radius: 10rpx;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+        transition: transform $transition-duration;
+        
+        &:active {
+          transform: scale(0.98);
+        }
       }
       
       .question-prompt {
+        background: linear-gradient(135deg, $primary-color, $primary-light);
+        border-radius: $border-radius-md;
+        padding: 20rpx;
         text-align: center;
-        margin-bottom: 20rpx;
+        box-shadow: 0 4rpx 12rpx rgba($primary-color, 0.2);
         
         .prompt-text {
-          font-size: 32rpx;
-          color: #333;
+          font-size: 30rpx;
+          color: #fff;
           font-weight: bold;
         }
       }
     }
   }
   
+  // Options Area
   .options-area {
-    padding: 0 30rpx;
-    margin-bottom: 30rpx;
+    padding: 20rpx 30rpx;
+    position: relative;
+    z-index: 1;
     
     .option-button {
-      background-color: #fff;
-      border-radius: 15rpx;
-      padding: 30rpx;
+      background-color: $card-background;
+      border-radius: $border-radius-lg;
+      padding: 25rpx 30rpx;
       margin-bottom: 20rpx;
-      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.06);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: all 0.3s;
+      transition: all $transition-duration;
+      position: relative;
+      overflow: hidden;
+      animation: slideInBottom 0.3s ease-out both;
+      
+      // Staggered animation for options
+      @for $i from 0 through 3 {
+        &:nth-child(#{$i + 1}) {
+          animation-delay: #{$i * 0.1 + 0.2}s;
+        }
+      }
+      
+      // Subtle hover effect
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg, 
+          rgba(255, 255, 255, 0),
+          rgba(255, 255, 255, 0.2),
+          rgba(255, 255, 255, 0)
+        );
+        transition: all 0.8s;
+      }
       
       &:active {
         transform: scale(0.98);
-        background-color: #f9f9f9;
+        
+        &::after {
+          left: 100%;
+        }
       }
       
       .option-text {
         font-size: 32rpx;
-        color: #333;
+        color: $text-color;
         font-weight: 500;
       }
       
       .option-result {
-        .iconfont {
-          font-size: 40rpx;
-          
-          &.correct-icon {
-            color: #52c41a;
-          }
-          
-          &.wrong-icon {
-            color: #f5222d;
-          }
-        }
+        font-size: 36rpx;
+        font-weight: bold;
       }
       
       &.option-correct {
-        background-color: rgba(82, 196, 26, 0.1);
-        border: 2rpx solid #52c41a;
+        background-color: rgba($success-color, 0.1);
+        border: 2rpx solid $success-color;
+        animation: correctAnswer 0.5s;
+        
+        .option-result {
+          color: $success-color;
+        }
       }
       
       &.option-incorrect {
-        background-color: rgba(245, 34, 45, 0.1);
-        border: 2rpx solid #f5222d;
+        background-color: rgba($error-color, 0.1);
+        border: 2rpx solid $error-color;
+        animation: wrongAnswer 0.5s;
+        
+        .option-result {
+          color: $error-color;
+        }
       }
       
       &.option-disabled {
-        opacity: 0.6;
+        opacity: 0.7;
         
         &:active {
           transform: none;
@@ -704,9 +823,11 @@ export default {
     }
   }
   
+  // Next Button Area
   .next-area {
-    padding: 0 30rpx;
-    margin-bottom: 50rpx;
+    padding: 20rpx 30rpx 50rpx;
+    position: relative;
+    z-index: 1;
     
     .feedback-message {
       text-align: center;
@@ -717,106 +838,141 @@ export default {
         font-weight: bold;
         
         &.correct-message {
-          color: #52c41a;
+          color: $success-color;
         }
         
         &.wrong-message {
-          color: #f5222d;
+          color: $error-color;
         }
       }
     }
     
     .next-button {
-      background: linear-gradient(to right, #3C8999, #55a5b5);
+      background: linear-gradient(135deg, $primary-color, $primary-light);
       color: #fff;
       font-size: 32rpx;
       font-weight: bold;
       height: 90rpx;
       line-height: 90rpx;
       border-radius: 45rpx;
-      box-shadow: 0 6rpx 16rpx rgba(60, 137, 153, 0.3);
+      box-shadow: 0 8rpx 20rpx rgba($primary-color, 0.3);
+      position: relative;
+      overflow: hidden;
+      transition: all $transition-duration;
+      animation: fadeIn 0.5s;
       
       &::after {
         border: none;
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg, 
+          rgba(255, 255, 255, 0),
+          rgba(255, 255, 255, 0.3),
+          rgba(255, 255, 255, 0)
+        );
+        transition: all 0.8s;
+      }
+      
+      &:active {
+        transform: scale(0.98);
+        box-shadow: 0 4rpx 12rpx rgba($primary-color, 0.2);
+        
+        &::after {
+          left: 100%;
+        }
       }
     }
   }
   
+  // Result Modal
   .result-modal {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10rpx);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    animation: fadeIn 0.3s;
     
     .result-card {
-      width: 600rpx;
-      background-color: #fff;
-      border-radius: 20rpx;
+      width: 85%;
+      max-width: 600rpx;
+      background-color: $card-background;
+      border-radius: $border-radius-lg;
       overflow: hidden;
+      box-shadow: 0 20rpx 40rpx rgba(0, 0, 0, 0.3);
+      animation: slideInBottom 0.4s ease-out;
       
       .result-header {
-        background: linear-gradient(to right, #3C8999, #55a5b5);
         padding: 30rpx;
+        background: linear-gradient(135deg, $primary-color, $primary-light);
         text-align: center;
         
         .result-title {
           font-size: 36rpx;
           color: #fff;
           font-weight: bold;
+          text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
         }
       }
       
       .result-content {
-        padding: 50rpx 30rpx;
+        padding: 40rpx 30rpx;
+        text-align: center;
         
         .result-score {
-          text-align: center;
           margin-bottom: 30rpx;
           
           .score-number {
             font-size: 80rpx;
-            color: #3C8999;
             font-weight: bold;
+            color: $primary-color;
           }
           
           .score-total {
             font-size: 40rpx;
-            color: #999;
+            color: $text-light;
           }
         }
         
         .result-percentage {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          margin-bottom: 40rpx;
+          background: linear-gradient(to right, $primary-color, $primary-light);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          display: inline-block;
+          margin-bottom: 30rpx;
           
           .percentage-text {
             font-size: 60rpx;
-            color: #333;
             font-weight: bold;
-            margin-bottom: 10rpx;
           }
           
           .percentage-label {
             font-size: 28rpx;
-            color: #999;
+            display: block;
+            margin-top: 5rpx;
           }
         }
         
         .result-message {
-          text-align: center;
-          padding: 0 30rpx;
+          padding: 20rpx;
+          border-radius: $border-radius-md;
+          background-color: #f8f8f8;
+          margin-bottom: 30rpx;
           
           text {
-            font-size: 32rpx;
-            color: #333;
+            font-size: 30rpx;
+            color: $text-color;
             line-height: 1.6;
           }
         }
@@ -825,30 +981,84 @@ export default {
       .result-actions {
         display: flex;
         padding: 30rpx;
-        border-top: 1px solid #f0f0f0;
+        border-top: 1rpx solid #f0f0f0;
         
         button {
           flex: 1;
           height: 80rpx;
           line-height: 80rpx;
           font-size: 30rpx;
+          font-weight: 500;
+          border-radius: $border-radius-md;
           
           &::after {
             border: none;
           }
+          
+          &:active {
+            transform: scale(0.98);
+          }
         }
         
         .restart-button {
-          background-color: #3C8999;
+          background: linear-gradient(135deg, $primary-color, $primary-light);
           color: #fff;
           margin-right: 20rpx;
-          border-radius: 10rpx;
+          box-shadow: 0 4rpx 12rpx rgba($primary-color, 0.2);
         }
         
         .back-button {
           background-color: #f5f5f5;
-          color: #333;
-          border-radius: 10rpx;
+          color: $text-color;
+        }
+      }
+    }
+  }
+}
+
+// Responsive Adjustments
+@media screen and (min-width: 768px) {
+  .practice-container {
+    .question-area {
+      .question-card {
+        .question-image {
+          height: 500rpx;
+        }
+      }
+    }
+    
+    .result-modal {
+      .result-card {
+        width: 70%;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 375px) {
+  .practice-container {
+    .practice-header {
+      .header-top {
+        .header-title {
+          font-size: 34rpx;
+        }
+        
+        .score-display {
+          padding: 10rpx 20rpx;
+          
+          .score-text {
+            font-size: 28rpx;
+          }
+        }
+      }
+    }
+    
+    .options-area {
+      .option-button {
+        padding: 20rpx 25rpx;
+        
+        .option-text {
+          font-size: 28rpx;
         }
       }
     }
