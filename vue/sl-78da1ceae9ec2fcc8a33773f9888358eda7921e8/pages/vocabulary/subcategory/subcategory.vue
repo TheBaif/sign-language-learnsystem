@@ -1,18 +1,31 @@
 <template>
   <view class="subcategory-container">
-    <!-- Header with Title -->
+    <!-- Enhanced Header with Background Gradient -->
     <view class="subcategory-header">
-      <view class="header-top">
-        <text class="header-title">{{ parentName || '未命名词库' }}</text>
+      <view class="header-content">
+        <view class="back-button" @tap="navigateBack">
+          <text class="back-icon">&#xe679;</text>
+        </view>
+        <view class="title-container">
+          <text class="header-title">{{ parentName || '未命名词库' }}</text>
+          <view class="breadcrumb" v-if="parentName">
+            <text class="breadcrumb-text">{{ parentName }}</text>
+            <text class="breadcrumb-divider" v-if="parentName">›</text>
+            <text class="breadcrumb-text">子分类</text>
+          </view>
+        </view>
+        <view class="search-button" @tap="navigateToSearch">
+          <text class="search-icon">&#xe665;</text>
+        </view>
       </view>
     </view>
     
-    <!-- Main Content -->
+    <!-- Main Content Area -->
     <scroll-view scroll-y class="subcategory-content" enable-back-to-top>
       <!-- Loading State -->
       <view v-if="loading" class="loading-state">
         <view class="loader"></view>
-        <text>加载分类中...</text>
+        <text class="loading-text">加载分类中...</text>
       </view>
       
       <!-- Main Content -->
@@ -26,7 +39,7 @@
         </view>
         
         <!-- Subcategory List -->
-        <view v-else>
+        <view v-else class="subcategory-list">
           <!-- Header with Info -->
           <view class="section-header">
             <view class="header-info">
@@ -35,6 +48,7 @@
             </view>
             <view class="view-all-link" @tap="navigateToAllWords">
               <text>查看全部词汇</text>
+              <text class="arrow-icon">›</text>
             </view>
           </view>
           
@@ -46,6 +60,9 @@
               :key="index"
               @tap="navigateToWordlist(item)"
             >
+              <view class="card-icon" :class="'color-' + (index % 6)">
+                <text class="icon-text">{{ item.name.slice(0, 1) }}</text>
+              </view>
               <view class="card-info">
                 <text class="card-title">{{ item.name || '未命名子分类' }}</text>
                 <text class="card-desc">{{ getSubcategoryDesc(item) }}</text>
@@ -54,39 +71,67 @@
             </view>
           </view>
           
-          <!-- Pagination Controls -->
+          <!-- Enhanced Pagination Controls -->
           <view class="pagination-controls" v-if="totalPages > 1">
-            <view 
-              class="page-btn prev-btn" 
-              :class="{ disabled: currentPage <= 1 }"
-              @tap="goToPrevPage"
-            >上一页
+            <view class="page-indicator">
+              <text>{{ currentPage }} / {{ totalPages }}</text>
             </view>
             
-            <view class="page-numbers">
+            <view class="page-buttons">
               <view 
-                v-for="page in displayedPageNumbers" 
-                :key="page"
-                class="page-number"
-                :class="{ active: page === currentPage }"
-                @tap="goToPage(page)"
+                class="page-btn first-btn" 
+                :class="{ disabled: currentPage <= 1 }"
+                @tap="goToFirstPage"
               >
-                {{ page }}
+                <text class="btn-text">首页</text>
               </view>
-            </view>
-            
-            <view 
-              class="page-btn next-btn" 
-              :class="{ disabled: currentPage >= totalPages }"
-              @tap="goToNextPage"
-            >下一页
+              
+              <view 
+                class="page-btn prev-btn" 
+                :class="{ disabled: currentPage <= 1 }"
+                @tap="goToPrevPage"
+              >
+                <text class="btn-text">上一页</text>
+              </view>
+              
+              <view class="page-numbers">
+                <view 
+                  v-for="page in displayedPageNumbers" 
+                  :key="page"
+                  class="page-number"
+                  :class="{ active: page === currentPage, divider: page === '...' }"
+                  @tap="goToPage(page)"
+                >
+                  {{ page }}
+                </view>
+              </view>
+              
+              <view 
+                class="page-btn next-btn" 
+                :class="{ disabled: currentPage >= totalPages }"
+                @tap="goToNextPage"
+              >
+                <text class="btn-text">下一页</text>
+              </view>
+              
+              <view 
+                class="page-btn last-btn" 
+                :class="{ disabled: currentPage >= totalPages }"
+                @tap="goToLastPage"
+              >
+                <text class="btn-text">尾页</text>
+              </view>
             </view>
           </view>
         </view>
-        
-       
       </block>
     </scroll-view>
+    
+    <!-- Fixed Action Button for Navigation -->
+    <view class="floating-action-button" @tap="navigateToAllWords">
+      <text class="fab-icon">&#xe664;</text>
+      <text class="fab-text">查看词汇</text>
+    </view>
   </view>
 </template>
 
@@ -318,15 +363,6 @@ export default {
       }
     },
     
-    // 查看手语详情
-    viewSignDetail(item) {
-      const results = [item];
-      uni.setStorageSync('searchResults', results);
-      uni.navigateTo({
-        url: `/pages/detail/detail?index=0`
-      });
-    },
-    
     // 跳转到词汇列表页面
     navigateToWordlist(subcategory) {
       const childName = subcategory.name || '未命名子词库';
@@ -340,19 +376,6 @@ export default {
       uni.navigateTo({
         url: `/pages/vocabulary/wordlist/wordlist?parentId=${this.parentId}&parentName=${encodeURIComponent(this.parentName)}`
       });
-    },
-    
-    // 根据索引获取分类图标
-    getCategoryIcon(index) {
-      const icons = [
-        '&#xe65c;', // 日常
-        '&#xe665;', // 学习
-        '&#xe66a;', // 家庭
-        '&#xe667;', // 工作
-        '&#xe669;', // 娱乐
-        '&#xe66b;'  // 情感
-      ];
-      return icons[index % icons.length];
     },
     
     // 获取子分类描述
@@ -419,297 +442,586 @@ export default {
 </script>
 
 <style lang="scss">
+// Colors
+$primary-color: #3C8999;
+$primary-light: #55a5b5;
+$primary-gradient: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+$accent-color: #FF9B50;
+$text-color: #333;
+$text-light: #666;
+$text-lighter: #999;
+$background-color: #f8f8f8;
+$card-background: #ffffff;
+$border-radius-sm: 10rpx;
+$border-radius-md: 20rpx;
+$border-radius-lg: 30rpx;
+$box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+$transition-duration: 0.3s;
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30rpx); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+  100% { transform: translateY(0); }
+}
+
 .subcategory-container {
   min-height: 100vh;
-  background-color: #f8f8f8;
-  display: flex;
-  flex-direction: column;
+  background-color: $background-color;
+  position: relative;
   
+  // Enhanced Header
   .subcategory-header {
-    background: linear-gradient(to right, #3C8999, #55a5b5);
-    padding: 20rpx 30rpx;
+    height: 260rpx;
+    background: $primary-gradient;
+    position: relative;
+    overflow: hidden;
     
-    .header-top {
+    // Add decorative elements
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    }
+    
+    &::before {
+      width: 400rpx;
+      height: 400rpx;
+      top: -200rpx;
+      right: -100rpx;
+      animation: pulse 10s infinite ease-in-out;
+    }
+    
+    &::after {
+      width: 300rpx;
+      height: 300rpx;
+      bottom: -150rpx;
+      left: -100rpx;
+      animation: pulse 14s infinite ease-in-out;
+    }
+    
+    .header-content {
+      height: 100%;
+      padding: 40rpx 30rpx;
+      position: relative;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 80rpx;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 1;
       
-      .back-button, .search-button {
-        width: 60rpx;
-        height: 60rpx;
-        background-color: rgba(255, 255, 255, 0.2);
-        border-radius: 30rpx;
+      .back-button {
+        position: absolute;
+        left: 30rpx;
+        top: 40rpx;
+        width: 70rpx;
+        height: 70rpx;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10rpx);
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: all $transition-duration;
         
-        .iconfont {
+        &:active {
+          transform: scale(0.95);
+          background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .back-icon {
           font-size: 36rpx;
           color: #fff;
         }
       }
       
-      .header-title {
-        font-size: 36rpx;
-        color: #fff;
-        font-weight: bold;
+      .title-container {
+        padding-left: 90rpx;
+        
+        .header-title {
+          font-size: 40rpx;
+          font-weight: bold;
+          color: #fff;
+          margin-bottom: 15rpx;
+          text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+        }
+        
+        .breadcrumb {
+          display: flex;
+          align-items: center;
+          
+          .breadcrumb-text {
+            font-size: 26rpx;
+            color: rgba(255, 255, 255, 0.9);
+          }
+          
+          .breadcrumb-divider {
+            margin: 0 10rpx;
+            font-size: 26rpx;
+            color: rgba(255, 255, 255, 0.7);
+          }
+        }
+      }
+      
+      .search-button {
+        position: absolute;
+        right: 30rpx;
+        top: 40rpx;
+        width: 70rpx;
+        height: 70rpx;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10rpx);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all $transition-duration;
+        
+        &:active {
+          transform: scale(0.95);
+          background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .search-icon {
+          font-size: 36rpx;
+          color: #fff;
+        }
       }
     }
   }
   
+  // Main Content
   .subcategory-content {
-    flex: 1;
-    padding: 30rpx;
+    height: calc(100vh - 260rpx);
+    width: 100%;
+    position: relative;
+    z-index: 2;
     
-    .loading-state, .empty-state {
+    // Loading State
+    .loading-state {
+      height: 300rpx;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 100rpx 0;
+      padding: 60rpx 30rpx;
       
       .loader {
-        width: 60rpx;
-        height: 60rpx;
+        width: 80rpx;
+        height: 80rpx;
         border-radius: 50%;
-        border: 4rpx solid rgba(60, 137, 153, 0.1);
-        border-top-color: #3C8999;
+        border: 4rpx solid rgba($primary-color, 0.1);
+        border-top-color: $primary-color;
         animation: spin 1s infinite linear;
-        margin-bottom: 20rpx;
+        margin-bottom: 30rpx;
       }
       
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      
-      text {
+      .loading-text {
         font-size: 28rpx;
-        color: #999;
+        color: $text-light;
       }
+    }
+    
+    // Empty State
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80rpx 30rpx;
+      animation: fadeIn 0.5s ease-out;
       
       .empty-image {
-        width: 200rpx;
-        height: 200rpx;
-        margin-bottom: 30rpx;
-        opacity: 0.6;
+        width: 240rpx;
+        height: 240rpx;
+        margin-bottom: 40rpx;
+        opacity: 0.7;
       }
       
       .empty-title {
-        font-size: 32rpx;
-        color: #333;
+        font-size: 36rpx;
         font-weight: bold;
-        margin-bottom: 10rpx;
+        color: $text-color;
+        margin-bottom: 15rpx;
       }
       
       .empty-desc {
         font-size: 28rpx;
-        color: #999;
+        color: $text-light;
         margin-bottom: 40rpx;
+        text-align: center;
       }
       
       .view-all-btn {
-        background: linear-gradient(to right, #3C8999, #55a5b5);
+        background: $primary-gradient;
         color: #fff;
-        font-size: 28rpx;
-        padding: 20rpx 40rpx;
+        font-size: 30rpx;
+        font-weight: bold;
+        padding: 20rpx 60rpx;
         border-radius: 40rpx;
-        box-shadow: 0 6rpx 16rpx rgba(60, 137, 153, 0.2);
+        box-shadow: 0 8rpx 16rpx rgba($primary-color, 0.3);
+        border: none;
+        transition: all $transition-duration;
         
         &::after {
           border: none;
         }
-      }
-    }
-    
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30rpx;
-      
-      .header-info {
-        .section-title {
-          font-size: 32rpx;
-          color: #333;
-          font-weight: bold;
-          margin-right: 15rpx;
-        }
-        
-        .section-count {
-          font-size: 24rpx;
-          color: #999;
-        }
-      }
-      
-      .view-all-link {
-        font-size: 26rpx;
-        color: #3C8999;
-      }
-    }
-    
-    .subcategory-grid {
-      .subcategory-card {
-        background-color: #fff;
-        border-radius: 16rpx;
-        padding: 30rpx;
-        margin-bottom: 20rpx;
-        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-        display: flex;
-        align-items: center;
         
         &:active {
           transform: scale(0.98);
-        }
-        
-        .card-icon {
-          width: 80rpx;
-          height: 80rpx;
-          border-radius: 16rpx;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-right: 20rpx;
-          
-          .iconfont {
-            font-size: 40rpx;
-            color: #fff;
-          }
-          
-          &.color-0 {
-            background-color: #4dabf7;
-          }
-          
-          &.color-1 {
-            background-color: #74c0fc;
-          }
-          
-          &.color-2 {
-            background-color: #66d9e8;
-          }
-          
-          &.color-3 {
-            background-color: #3bc9db;
-          }
-          
-          &.color-4 {
-            background-color: #63e6be;
-          }
-          
-          &.color-5 {
-            background-color: #38d9a9;
-          }
-        }
-        
-        .card-info {
-          flex: 1;
-          
-          .card-title {
-            font-size: 30rpx;
-            color: #333;
-            font-weight: 500;
-            margin-bottom: 6rpx;
-            display: block;
-          }
-          
-          .card-desc {
-            font-size: 24rpx;
-            color: #999;
-          }
-        }
-        
-        .card-arrow {
-          font-size: 32rpx;
-          color: #ccc;
-          margin-left: 10rpx;
+          box-shadow: 0 4rpx 8rpx rgba($primary-color, 0.3);
         }
       }
     }
     
-    .pagination-controls {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 40rpx 0;
+    // Subcategory List
+    .subcategory-list {
+      padding: 30rpx;
+      position: relative;
       
-      .page-btn {
-        height: 56rpx;
+      // Enhanced section header
+      .section-header {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
-        background-color: #3C8999;
-        color: #fff;
-        border-radius: 28rpx;
-        font-size: 24rpx;
-        min-width: 80rpx;
-        padding: 0 15rpx;
-        box-shadow: 0 2rpx 6rpx rgba(60, 137, 153, 0.2);
+        margin-bottom: 30rpx;
+        animation: fadeIn 0.4s ease-out;
         
-        .iconfont {
-          font-size: 32rpx;
-          color: #fff;
+        .header-info {
+          display: flex;
+          align-items: center;
+          
+          .section-title {
+            font-size: 34rpx;
+            font-weight: bold;
+            color: $text-color;
+            margin-right: 15rpx;
+            position: relative;
+            padding-left: 20rpx;
+            
+            &::before {
+              content: "";
+              position: absolute;
+              left: 0;
+              top: 20%;
+              height: 60%;
+              width: 8rpx;
+              background: $primary-gradient;
+              border-radius: 4rpx;
+            }
+          }
+          
+          .section-count {
+            font-size: 26rpx;
+            color: $text-light;
+            background: #f0f0f0;
+            padding: 4rpx 15rpx;
+            border-radius: 20rpx;
+          }
         }
         
-        &.disabled {
-          background-color: #ccc;
-          opacity: 0.6;
+        .view-all-link {
+          display: flex;
+          align-items: center;
+          font-size: 28rpx;
+          color: $primary-color;
+          padding: 8rpx 20rpx;
+          background: rgba($primary-color, 0.1);
+          border-radius: 30rpx;
+          transition: all $transition-duration;
+          
+          &:active {
+            background: rgba($primary-color, 0.2);
+            transform: scale(0.98);
+          }
+          
+          .arrow-icon {
+            margin-left: 8rpx;
+            font-size: 24rpx;
+          }
         }
       }
       
-      .page-numbers {
-        display: flex;
-        align-items: center;
-        margin: 0 20rpx;
-        
-        .page-number {
-          min-width: 60rpx;
-          height: 60rpx;
+      // Enhanced subcategory grid
+      .subcategory-grid {
+        .subcategory-card {
+          background-color: $card-background;
+          border-radius: $border-radius-lg;
+          padding: 26rpx 30rpx;
+          margin-bottom: 25rpx;
+          box-shadow: $box-shadow;
           display: flex;
           align-items: center;
-          justify-content: center;
-          font-size: 28rpx;
-          color: #666;
-          margin: 0 10rpx;
+          transition: all $transition-duration;
+          animation: slideInRight 0.5s ease-out both;
+          position: relative;
+          overflow: hidden;
           
-          &.active {
-            background-color: #f0f0f0;
-            border-radius: 30rpx;
-            color: #3C8999;
+          // Staggered animation for cards
+          @for $i from 0 through 5 {
+            &:nth-child(#{$i + 1}) {
+              animation-delay: #{$i * 0.08}s;
+            }
+          }
+          
+          // Add subtle shimmer effect
+          &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(
+              90deg,
+              rgba(255, 255, 255, 0) 0%,
+              rgba(255, 255, 255, 0.4) 50%,
+              rgba(255, 255, 255, 0) 100%
+            );
+            transform: skewX(-25deg);
+            transition: left 0.7s ease-out;
+          }
+          
+          &:active {
+            transform: translateY(2rpx);
+            box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+            
+            &::after {
+              left: 200%;
+            }
+          }
+          
+          .card-icon {
+            width: 80rpx;
+            height: 80rpx;
+            border-radius: 16rpx;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 25rpx;
+            flex-shrink: 0;
+            
+            .icon-text {
+              font-size: 36rpx;
+              font-weight: bold;
+              color: #fff;
+            }
+            
+            &.color-0 { background: linear-gradient(135deg, #4dabf7, #2b8fda); }
+            &.color-1 { background: linear-gradient(135deg, #74c0fc, #4a9cdb); }
+            &.color-2 { background: linear-gradient(135deg, #a5d8ff, #76b0da); }
+            &.color-3 { background: linear-gradient(135deg, #66d9e8, #36b9ca); }
+            &.color-4 { background: linear-gradient(135deg, #3bc9db, #1ba4b6); }
+            &.color-5 { background: linear-gradient(135deg, #63e6be, #38d9a9); }
+          }
+          
+          .card-info {
+            flex: 1;
+            overflow: hidden;
+            padding-right: 15rpx;
+            
+            .card-title {
+              font-size: 32rpx;
+              color: $text-color;
+              font-weight: bold;
+              margin-bottom: 10rpx;
+              display: block;
+            }
+            
+            .card-desc {
+              font-size: 26rpx;
+              color: $text-lighter;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+          
+          .card-arrow {
+            font-size: 40rpx;
+            color: #ddd;
+            margin-left: 15rpx;
+            transition: transform $transition-duration;
+          }
+          
+          &:active .card-arrow {
+            transform: translateX(10rpx);
+            color: $primary-color;
+          }
+        }
+      }
+      
+      // Enhanced pagination controls
+      .pagination-controls {
+        margin: 40rpx 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: fadeIn 0.6s ease-out;
+        
+        .page-indicator {
+          background: rgba($primary-color, 0.1);
+          padding: 8rpx 25rpx;
+          border-radius: 25rpx;
+          margin-bottom: 20rpx;
+          
+          text {
+            font-size: 28rpx;
+            color: $primary-color;
             font-weight: bold;
           }
         }
-      }
-    }
-    
-    .popular-section {
-      margin-top: 40rpx;
-      
-      .popular-scroll {
-        white-space: nowrap;
-        margin: 0 -30rpx;
-        padding: 0 30rpx;
         
-        .popular-item {
-          display: inline-block;
-          margin-right: 20rpx;
-          width: 180rpx;
+        .page-buttons {
+          display: flex;
+          align-items: center;
+          background: #fff;
+          border-radius: 40rpx;
+          padding: 10rpx;
+          box-shadow: $box-shadow;
           
-          .popular-image {
-            width: 180rpx;
-            height: 180rpx;
-            border-radius: 16rpx;
-            background-color: #f0f0f0;
-            margin-bottom: 10rpx;
+          .page-btn {
+            padding: 10rpx 25rpx;
+            background: $primary-color;
+            color: #fff;
+            border-radius: 25rpx;
+            margin: 0 5rpx;
+            transition: all $transition-duration;
+            
+            .btn-text {
+              font-size: 26rpx;
+            }
+            
+            &:active:not(.disabled) {
+              transform: scale(0.95);
+              opacity: 0.9;
+            }
+            
+            &.disabled {
+              background: #e0e0e0;
+              color: #aaa;
+            }
+            
+            &.first-btn, &.last-btn {
+              background: rgba($primary-color, 0.8);
+              .btn-text {
+                font-size: 24rpx;
+              }
+            }
           }
           
-          .popular-name {
-            font-size: 26rpx;
-            color: #333;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+          .page-numbers {
+            display: flex;
+            align-items: center;
+            margin: 0 10rpx;
+            
+            .page-number {
+              min-width: 60rpx;
+              height: 60rpx;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 5rpx;
+              font-size: 28rpx;
+              color: $text-color;
+              border-radius: 30rpx;
+              transition: all $transition-duration;
+              
+              &:active:not(.divider) {
+                background: #f0f0f0;
+              }
+              
+              &.active {
+                background: rgba($primary-color, 0.15);
+                color: $primary-color;
+                font-weight: bold;
+              }
+              
+              &.divider {
+                color: $text-lighter;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Floating Action Button
+  .floating-action-button {
+    position: fixed;
+    right: 30rpx;
+    bottom: 50rpx;
+    height: 90rpx;
+    padding: 0 40rpx;
+    background: $primary-gradient;
+    border-radius: 45rpx;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 8rpx 20rpx rgba($primary-color, 0.35);
+    z-index: 99;
+    animation: float 4s infinite ease-in-out;
+    transition: all $transition-duration;
+    
+    &:active {
+      transform: scale(0.95);
+      box-shadow: 0 4rpx 12rpx rgba($primary-color, 0.25);
+    }
+    
+    .fab-icon {
+      font-size: 36rpx;
+      color: #fff;
+      margin-right: 15rpx;
+    }
+    
+    .fab-text {
+      font-size: 28rpx;
+      font-weight: bold;
+      color: #fff;
+    }
+  }
+}
+
+/* Responsive Adjustments */
+@media screen and (min-width: 768px) {
+  .subcategory-container {
+    .subcategory-content {
+      .subcategory-list {
+        .subcategory-grid {
+          display: flex;
+          flex-wrap: wrap;
+          margin: 0 -10rpx;
+          
+          .subcategory-card {
+            width: calc(50% - 20rpx);
+            margin: 0 10rpx 20rpx;
           }
         }
       }
