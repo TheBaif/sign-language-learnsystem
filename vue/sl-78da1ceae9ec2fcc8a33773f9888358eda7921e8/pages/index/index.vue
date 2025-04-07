@@ -1,76 +1,147 @@
 <template>
-  <view class="container" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
-    <view class="header">
-      <image class="avatar" :src="userInfo.userPic" @tap="navigateToUserProfile"/>
+  <view class="home-container">
+    <!-- Stylized background elements -->
+    <view class="background-elements">
+      <view class="circle circle-1"></view>
+      <view class="circle circle-2"></view>
+      <view class="circle circle-3"></view>
     </view>
     
-    <view class="content">
-      <view class="welcome">
-        <text>欢迎使用手语学习应用</text>
-        <text class="tip">向上滑动搜索,点击下方按钮开始学习</text>
+    <view class="home-content">
+      <!-- Header with user profile -->
+      <view class="header">
+        <view class="logo-area">
+          <image src="/static/logo.png" mode="aspectFit" class="mini-logo"></image>
+          <text class="app-name">手语学习</text>
+        </view>
+        <view class="avatar-wrapper" @tap="navigateToUserProfile">
+          <image class="avatar" :src="userInfo.userPic || '/static/avatar.png'" mode="aspectFill"></image>
+          <view class="avatar-indicator" v-if="calculateConsecutiveDays()">
+            <text>{{ calculateConsecutiveDays() }}天</text>
+          </view>
+        </view>
       </view>
       
-      <view class="progress-wrapper">
-        <view class="progress-header">
-          <text class="title">学习进度</text>
-          <text class="more" @tap="navigateToLearningProgress">查看详情 ></text>
+      <!-- Main welcome card -->
+      <view class="welcome-card">
+        <view class="welcome-content">
+          <view class="welcome-text">
+            <text class="greeting">{{ getGreeting() }}</text>
+            <text class="username">{{ userInfo.nickname || userInfo.username || '学习者' }}</text>
+          </view>
+          <view class="tip-container">
+            <text class="tip-text">{{ getDailyTip() }}</text>
+          </view>
+        </view>
+        <view class="illustration">
+          <image src="/static/welcome-illus.png" mode="aspectFit"></image>
+        </view>
+      </view>
+      
+      <!-- Learning Progress Card -->
+      <view class="progress-card" :class="{'loading': loadingProgress}">
+        <view class="card-header">
+          <text class="section-title">学习进度</text>
+          <text class="view-more" @tap="navigateToLearningProgress">查看详情</text>
         </view>
         
-        <view v-if="loadingProgress" class="progress-loading">
-          <view class="loader"/>
+        <view v-if="loadingProgress" class="loading-state">
+          <view class="loader"></view>
           <text>加载中...</text>
         </view>
         
         <view v-else class="progress-content">
-          <view class="stats">
+          <!-- Stats overview -->
+          <view class="stats-grid">
             <view class="stat-item">
-              <text class="value">{{ progressData.totalSigns || 0 }}</text>
-              <text class="label">已学习</text>
+              <view class="stat-value-container">
+                <text class="stat-value">{{ progressData.totalSigns || 0 }}</text>
+              </view>
+              <text class="stat-label">已学习</text>
             </view>
             <view class="stat-item">
-              <text class="value">{{ progressData.masteredSigns || 0 }}</text>
-              <text class="label">已掌握</text>
+              <view class="stat-value-container">
+                <text class="stat-value">{{ progressData.masteredSigns || 0 }}</text>
+              </view>
+              <text class="stat-label">已掌握</text>
             </view>
             <view class="stat-item">
-              <text class="value">{{ formatProficiency(progressData.averageProficiency) }}</text>
-              <text class="label">掌握度</text>
+              <view class="stat-value-container">
+                <text class="stat-value">{{ formatProficiency(progressData.averageProficiency) }}</text>
+              </view>
+              <text class="stat-label">掌握度</text>
             </view>
           </view>
           
-          <view class="bar-section">
-            <view class="bar-label">
+          <!-- Progress bar -->
+          <view class="progress-bar-section">
+            <view class="progress-label">
               <text>学习进度</text>
               <text>{{ calculateProgressPercentage() }}%</text>
             </view>
-            <view class="bar-bg">
-              <view 
-                class="bar-fill"
-                :style="{ width: calculateProgressPercentage() + '%' }"
-              />
+            <view class="progress-track">
+              <view class="progress-milestone" style="left: 33%">
+                <view class="milestone-dot" :class="{'reached': calculateProgressPercentage() >= 33}"></view>
+                <text class="milestone-label">初级</text>
+              </view>
+              <view class="progress-milestone" style="left: 66%">
+                <view class="milestone-dot" :class="{'reached': calculateProgressPercentage() >= 66}"></view>
+                <text class="milestone-label">中级</text>
+              </view>
+              <view class="progress-milestone" style="left: 100%">
+                <view class="milestone-dot" :class="{'reached': calculateProgressPercentage() >= 100}"></view>
+                <text class="milestone-label">高级</text>
+              </view>
+              <view class="progress-fill" :style="{ width: calculateProgressPercentage() + '%' }"></view>
             </view>
           </view>
           
-          <view v-if="progressData.recommendedNextSigns && progressData.recommendedNextSigns.length" class="recommend">
-            <text class="recommend-title">推荐学习</text>
-            <view class="recommend-items">
+          <!-- Recommendations -->
+          <view class="recommendations" v-if="progressData.recommendedNextSigns && progressData.recommendedNextSigns.length">
+            <text class="recommendation-title">推荐学习</text>
+            <scroll-view scroll-x class="recommendation-scroll" show-scrollbar="false">
               <view 
-                v-for="(item, index) in progressData.recommendedNextSigns.slice(0, 2)" 
+                v-for="(item, index) in progressData.recommendedNextSigns" 
                 :key="index"
-                class="recommend-item"
+                class="recommendation-item"
                 @tap="goToSignDetail(item)"
               >
-                <text class="name">{{ item.name }}</text>
-                <text class="pinyin">{{ item.pinyin }}</text>
+                <image 
+                  :src="item.imageSrc || '/static/placeholder-sign.png'" 
+                  mode="aspectFill"
+                  class="recommendation-image"
+                ></image>
+                <view class="recommendation-info">
+                  <text class="recommendation-name">{{ item.name }}</text>
+                  <text class="recommendation-pinyin">{{ item.pinyin }}</text>
+                </view>
               </view>
-            </view>
+            </scroll-view>
           </view>
         </view>
       </view>
-    </view>
-    
-    <view class="nav">
-      <button class="nav-btn study-btn" @tap="navigateToVocabulary">学习</button>
-      <button class="nav-btn practice-btn" @tap="navigateToPractice">练习</button>
+      
+      <!-- Search card -->
+      <view class="search-card" @tap="navigateToSearch">
+        <text class="search-placeholder">搜索手语词汇...</text>
+      </view>
+      
+      <!-- Navigation buttons -->
+      <view class="nav-buttons">
+        <view class="nav-button study-button" @tap="navigateToVocabulary">
+          <view class="button-icon">
+          </view>
+          <text class="button-text">学习词汇</text>
+        </view>
+        
+        <view class="nav-button practice-button" @tap="navigateToPractice">
+          <view class="button-icon">
+          </view>
+          <text class="button-text">练习测试</text>
+        </view>
+        
+        
+      </view>
     </view>
   </view>
 </template>
@@ -109,6 +180,7 @@ export default {
   },
   
   methods: {
+    // Navigation methods
     navigateToVocabulary() {
       uni.navigateTo({
         url: '/pages/vocabulary/index/index'
@@ -121,9 +193,79 @@ export default {
       })
     },
     
+    navigateToPractice() {
+      uni.navigateTo({
+        url: '/pages/practice/practice'
+      });
+    },
+    
+    navigateToRecognition() {
+      uni.navigateTo({
+        url: '/pages/recognition/recognition'
+      });
+    },
+    
+    navigateToSearch() {
+      const token = uni.getStorageSync('token')
+      if (!token) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none'
+        })
+        setTimeout(() => {
+          uni.reLaunch({
+            url: '/pages/login/login'
+          })
+        }, 1500)
+        return
+      }
+      
+      uni.navigateTo({
+        url: '/pages/search/search'
+      })
+    },
+    
+    navigateToUserProfile() {
+      uni.navigateTo({
+        url: '/pages/user/user'
+      })
+    },
+    
+    // Get time-appropriate greeting
+    getGreeting() {
+      const hour = new Date().getHours()
+      if (hour < 6) return '夜深了，'
+      if (hour < 9) return '早上好，'
+      if (hour < 12) return '上午好，'
+      if (hour < 14) return '中午好，'
+      if (hour < 18) return '下午好，'
+      if (hour < 22) return '晚上好，'
+      return '夜深了，'
+    },
+    
+    // Get random daily tip
+    getDailyTip() {
+      const tips = [
+        '每天学习15分钟，坚持才会有收获',
+        '手语学习需要不断练习才能熟练',
+        '向上滑动可以快速搜索手语词汇',
+        '尝试通过练习模式检验学习成果',
+        '学习遇到困难，不妨多看几遍视频'
+      ]
+      return tips[Math.floor(Math.random() * tips.length)]
+    },
+    
+    // Simulate consecutive days calculation
+    calculateConsecutiveDays() {
+      if (this.progressData && this.progressData.consecutiveLearningDays) {
+        return this.progressData.consecutiveLearningDays
+      }
+      return 0
+    },
+    
+    // Authentication check
     checkLogin() {
       const token = uni.getStorageSync('token')
-      console.log('当前token:', token)
       if (!token) {
         uni.reLaunch({
           url: '/pages/login/login'
@@ -131,6 +273,7 @@ export default {
       }
     },
     
+    // Load user information
     async getUserInfo() {
       try {
         const token = uni.getStorageSync('token')
@@ -145,6 +288,7 @@ export default {
       }
     },
     
+    // Load progress data
     async loadProgressData() {
       this.loadingProgress = true
       
@@ -164,6 +308,7 @@ export default {
           masteredSigns: 12,
           averageProficiency: 65.4,
           totalLearningTimeMinutes: 205,
+          consecutiveLearningDays: 3,
           recommendedNextSigns: [
             {
               id: 1,
@@ -190,11 +335,13 @@ export default {
       }
     },
     
+    // Format proficiency percentage
     formatProficiency(proficiency) {
       if (!proficiency) return '0%'
       return Math.round(proficiency) + '%'
     },
     
+    // Calculate progress percentage
     calculateProgressPercentage() {
       if (!this.progressData.totalSigns || this.progressData.totalSigns === 0) return 0
       
@@ -205,6 +352,7 @@ export default {
       return progress
     },
     
+    // Navigate to sign detail
     goToSignDetail(sign) {
       // 记录学习行为
       this.recordLearning(sign.id)
@@ -219,6 +367,7 @@ export default {
       })
     },
     
+    // Record learning activity
     async recordLearning(signId) {
       try {
         await http.post('/learning/record', {
@@ -227,304 +376,596 @@ export default {
       } catch (error) {
         console.error('记录学习行为失败:', error)
       }
-    },
-    
-    navigateToUserProfile() {
-      uni.navigateTo({
-        url: '/pages/user/user'
-      })
-    },
-    
-    handleAvatar() {
-      uni.showActionSheet({
-        itemList: ['退出登录'],
-        success: (res) => {
-          if (res.tapIndex === 0) {
-            this.handleLogout()
-          }
-        }
-      })
-    },
-    
-    handleLogout() {
-      uni.showModal({
-        title: '提示',
-        content: '确定要退出登录吗？',
-        success: (res) => {
-          if (res.confirm) {
-            uni.removeStorageSync('token')
-            uni.removeStorageSync('userInfo')
-            uni.reLaunch({
-              url: '/pages/login/login'
-            })
-          }
-        }
-      })
-    },
-    
-    handleTouchStart(e) {
-      this.touchStartY = e.touches[0].clientY
-    },
-    
-    handleTouchEnd(e) {
-      const touchEndY = e.changedTouches[0].clientY
-      const deltaY = touchEndY - this.touchStartY
-      
-      if (deltaY > this.minVerticalSwipe && 
-          Math.abs(deltaY) > this.swipeThreshold) {
-        this.navigateToSearch()
-      }
-    },
-    
-    navigateToSearch() {
-      const token = uni.getStorageSync('token')
-      if (!token) {
-        uni.showToast({
-          title: '请先登录',
-          icon: 'none'
-        })
-        setTimeout(() => {
-          uni.reLaunch({
-            url: '/pages/login/login'
-          })
-        }, 1500)
-        return
-      }
-      
-      uni.navigateTo({
-        url: '/pages/search/search'
-      })
-    },
-    
-    navigateToPractice() {
-      uni.navigateTo({
-        url: '/pages/practice/practice'
-      });
     }
   }
 }
 </script>
 
 <style lang="scss">
-// 把一些通用的样式属性定义为变量
-$primary-color: #3c8999;
-$light-color: #f8f8f8;
+// Define variables for consistent theming
+$primary-color: #3C8999;
+$primary-light: #55a5b5;
+$primary-dark: #2a6b78;
+$accent-color: #FF9B50;
 $text-color: #333;
-$disabled-color: #ccc;
-$border-radius: 16rpx;
-$box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+$text-light: #666;
+$text-lighter: #999;
+$background-color: #f5f5f5;
+$card-background: #ffffff;
+$border-radius-sm: 10rpx;
+$border-radius-md: 20rpx;
+$border-radius-lg: 30rpx;
+$box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+$transition-duration: 0.3s;
 
-.container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+// Keyframes for animations
+@keyframes floating {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+  100% { transform: translateY(0); }
+}
 
-  .header {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;   
-    padding: 30rpx;
-    background-color: $light-color;
-    box-shadow: $box-shadow;
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 0.6; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Main container styles
+.home-container {
+  min-height: 100vh;
+  background-color: $background-color;
+  position: relative;
+  
+  // Background decorative elements
+  .background-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40vh;
+    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+    border-bottom-left-radius: 30rpx;
+    border-bottom-right-radius: 30rpx;
+    overflow: hidden;
+    pointer-events: none;
     
-    .avatar {
-      width: 100rpx;
-      height: 100rpx;
+    .circle {
+      position: absolute;
       border-radius: 50%;
-      border: 2rpx solid #ddd; 
+      background: linear-gradient(45deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+      
+      &.circle-1 {
+        top: -100rpx;
+        right: -100rpx;
+        width: 500rpx;
+        height: 500rpx;
+        animation: pulse 8s infinite ease-in-out;
+      }
+      
+      &.circle-2 {
+        bottom: -150rpx;
+        left: -150rpx;
+        width: 400rpx;
+        height: 400rpx;
+        animation: pulse 12s infinite ease-in-out;
+      }
+      
+      &.circle-3 {
+        top: 20%;
+        right: 20%;
+        width: 200rpx;
+        height: 200rpx;
+        animation: pulse 10s infinite ease-in-out;
+      }
     }
   }
-
-  .content {
-    flex: 1;
-    padding: 30rpx;
-    overflow-y: auto;
+  
+  // Main content
+  .home-content {
+    position: relative;
+    z-index: 1;
+    padding: 40rpx 30rpx;
     
-    .welcome {
-      text-align: center;
-      margin-bottom: 40rpx;
+    // Header styling
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30rpx;
       
-      text {
-        display: block;
-        color: $text-color;
+      .logo-area {
+        display: flex;
+        align-items: center;
         
-        &:first-child {  
-          font-size: 36rpx;
-          margin-bottom: 20rpx;
+        .mini-logo {
+          width: 60rpx;
+          height: 60rpx;
+          margin-right: 15rpx;
+          border-radius: 50%;
+          box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
         }
         
-        &.tip {
-          font-size: 26rpx;
-          color: #999;  
+        .app-name {
+          font-size: 34rpx;
+          font-weight: bold;
+          color: #ffffff;
+          text-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.1);
+        }
+      }
+      
+      .avatar-wrapper {
+        position: relative;
+        
+        .avatar {
+          width: 80rpx;
+          height: 80rpx;
+          border-radius: 50%;
+          border: 3rpx solid rgba(255, 255, 255, 0.8);
+          box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+        }
+        
+        .avatar-indicator {
+          position: absolute;
+          bottom: -5rpx;
+          right: -5rpx;
+          min-width: 40rpx;
+          height: 40rpx;
+          border-radius: 20rpx;
+          background-color: $accent-color;
+          color: #fff;
+          font-size: 20rpx;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 8rpx;
+          box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
         }
       }
     }
     
-    .progress-wrapper {
+    // Welcome card
+    .welcome-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10rpx);
+      border-radius: $border-radius-lg;
       padding: 30rpx;
-      background-color: #fff;
-      border-radius: $border-radius;
-      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+      margin-bottom: 30rpx;
+      box-shadow: $box-shadow;
+      display: flex;
+      align-items: center;
       
-      .progress-header {
+      .welcome-content {
+        flex: 1;
+        
+        .welcome-text {
+          margin-bottom: 15rpx;
+          
+          .greeting {
+            font-size: 28rpx;
+            color: $text-light;
+            display: block;
+            margin-bottom: 5rpx;
+          }
+          
+          .username {
+            font-size: 40rpx;
+            font-weight: bold;
+            color: $primary-color;
+            display: block;
+          }
+        }
+        
+        .tip-container {
+          background-color: rgba($primary-color, 0.1);
+          padding: 15rpx 20rpx;
+          border-radius: $border-radius-md;
+          border-left: 4rpx solid $primary-color;
+          
+          .tip-text {
+            font-size: 24rpx;
+            color: $primary-dark;
+            line-height: 1.5;
+          }
+        }
+      }
+      
+      .illustration {
+        width: 180rpx;
+        height: 180rpx;
+        margin-left: 20rpx;
+        animation: floating 4s ease-in-out infinite;
+        
+        image {
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+    
+    // Progress card
+    .progress-card {
+      background-color: $card-background;
+      border-radius: $border-radius-lg;
+      padding: 30rpx;
+      margin-bottom: 30rpx;
+      box-shadow: $box-shadow;
+      
+      .card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20rpx;
+        margin-bottom: 30rpx;
         
-        .title {
+        .section-title {
           font-size: 32rpx;
           font-weight: bold;
+          color: $text-color;
+          position: relative;
+          padding-left: 20rpx;
+          
+          &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 15%;
+            height: 70%;
+            width: 8rpx;
+            background: linear-gradient(to bottom, $primary-color, $primary-light);
+            border-radius: 4rpx;
+          }
         }
         
-        .more {
+        .view-more {
           font-size: 26rpx;
           color: $primary-color;
+          padding: 8rpx 16rpx;
+          background-color: rgba($primary-color, 0.1);
+          border-radius: 30rpx;
+          transition: background-color $transition-duration;
+          
+          &:active {
+            background-color: rgba($primary-color, 0.2);
+          }
         }
       }
-
-      .progress-loading {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 150rpx;
-
-        .loader {
-          width: 40rpx;
-          height: 40rpx;
-          margin-bottom: 15rpx; 
-          border-radius: 50%;
-          border: 4rpx solid rgba($primary-color, 0.2);
-          border-top-color: $primary-color;
-          animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }  
-        }
-        
-        text {
-          font-size: 26rpx;
-          color: #999;
-        }
-      }
-
-      .progress-content {
-        .stats {
+      
+      &.loading {
+        .loading-state {
+          height: 300rpx;
           display: flex;
-          justify-content: space-around;
-          margin-bottom: 30rpx;
-
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          
+          .loader {
+            width: 60rpx;
+            height: 60rpx;
+            border-radius: 50%;
+            border: 4rpx solid rgba($primary-color, 0.1);
+            border-top-color: $primary-color;
+            animation: spin 1s infinite linear;
+            margin-bottom: 20rpx;
+          }
+          
+          text {
+            font-size: 28rpx;
+            color: $text-lighter;
+          }
+        }
+      }
+      
+      .progress-content {
+        // Stats grid
+        .stats-grid {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 40rpx;
+          
           .stat-item {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;  
-
-            .value {
-              margin-bottom: 8rpx; 
-              font-size: 36rpx;
-              font-weight: bold;
-              color: $primary-color; 
+            align-items: center;
+            position: relative;
+            
+            &:not(:last-child)::after {
+              content: "";
+              position: absolute;
+              right: 0;
+              top: 15%;
+              height: 70%;
+              width: 1px;
+              background-color: rgba(0, 0, 0, 0.05);
             }
-
-            .label {
+            
+            .stat-value-container {
+              margin-bottom: 10rpx;
+              position: relative;
+              
+              .stat-value {
+                font-size: 46rpx;
+                font-weight: bold;
+                color: $primary-color;
+              }
+            }
+            
+            .stat-label {
               font-size: 24rpx;
-              color: #999;
+              color: $text-light;
             }
           }
         }
-
-        .bar-section {
-          margin-bottom: 30rpx;
-
-          .bar-label {
+        
+        // Progress bar
+        .progress-bar-section {
+          margin-bottom: 40rpx;
+          
+          .progress-label {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10rpx;
-            font-size: 26rpx;
-            color: #666;
+            
+            text {
+              font-size: 26rpx;
+              color: $text-light;
+            }
           }
-
-          .bar-bg {
-            height: 16rpx;
+          
+          .progress-track {
+            height: 12rpx;
             background-color: #f0f0f0;
-            border-radius: 8rpx;
-            overflow: hidden;
-
-            .bar-fill {
+            border-radius: 6rpx;
+            position: relative;
+            margin-bottom: 30rpx;
+            margin-top: 30rpx;
+            
+            .progress-milestone {
+              position: absolute;
+              top: -10rpx;
+              transform: translateX(-50%);
+              
+              .milestone-dot {
+                width: 24rpx;
+                height: 24rpx;
+                border-radius: 50%;
+                background-color: #f0f0f0;
+                border: 3rpx solid #fff;
+                box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+                margin: 0 auto 10rpx;
+                transition: all $transition-duration;
+                
+                &.reached {
+                  background-color: $primary-color;
+                  box-shadow: 0 2rpx 10rpx rgba($primary-color, 0.3);
+                }
+              }
+              
+              .milestone-label {
+                font-size: 22rpx;
+                color: $text-lighter;
+                text-align: center;
+                display: block;
+                white-space: nowrap;
+              }
+            }
+            
+            .progress-fill {
               height: 100%;
-              background: linear-gradient(to right, $primary-color, #55a5b5);
-              border-radius: 8rpx;
-              transition: width 0.5s;
+              border-radius: 6rpx;
+              background: linear-gradient(to right, $primary-color, $primary-light);
+              position: relative;
+              transition: width 0.5s ease-out;
+              
+              &::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(
+                  90deg,
+                  rgba(255,255,255,0) 0%,
+                  rgba(255,255,255,0.5) 50%,
+                  rgba(255,255,255,0) 100%
+                );
+                background-size: 200% 100%;
+                animation: shimmer 2s infinite;
+                border-radius: 6rpx;
+              }
             }
           }
         }
-
-        .recommend {
-          .recommend-title {
-            margin-bottom: 15rpx;
+        
+        // Recommendations section
+        .recommendations {
+          .recommendation-title {
             font-size: 28rpx;
-            color: #666;
+            color: $text-color;
+            margin-bottom: 20rpx;
+            display: block;
           }
-
-          .recommend-items {
-            display: flex;
-            gap: 20rpx;
-
-            .recommend-item {
-              flex: 1;
-              padding: 15rpx 20rpx;
-              background-color: rgba($primary-color, 0.1);
-              border-radius: 12rpx;
+          
+          .recommendation-scroll {
+            white-space: nowrap;
+            
+            .recommendation-item {
+              display: inline-block;
+              width: 200rpx;
+              margin-right: 20rpx;
+              background-color: #f9f9f9;
+              border-radius: $border-radius-md;
+              overflow: hidden;
+              box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+              transition: transform $transition-duration;
               
               &:active {
-                background-color: rgba($primary-color, 0.2);
+                transform: scale(0.98);
               }
-
-              .name {
-                margin-bottom: 6rpx;
-                font-size: 30rpx;  
+              
+              .recommendation-image {
+                width: 200rpx;
+                height: 150rpx;
+                background-color: #f0f0f0;
               }
-
-              .pinyin {
-                font-size: 24rpx;
-                color: #999;
+              
+              .recommendation-info {
+                padding: 15rpx;
+                
+                .recommendation-name {
+                  font-size: 28rpx;
+                  color: $text-color;
+                  font-weight: bold;
+                  margin-bottom: 5rpx;
+                  display: block;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+                
+                .recommendation-pinyin {
+                  font-size: 22rpx;
+                  color: $text-light;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
               }
             }
           }
         }
       }
     }
-  }
-
-  .nav {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    height: 120rpx;
-    padding: 0 20rpx;
-    background: $light-color;
-    box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.1);
     
-    .nav-btn {
+    // Search card
+    .search-card {
+      background-color: $card-background;
+      border-radius: 50rpx;
+      padding: 20rpx 30rpx;
+      margin-bottom: 30rpx;
+      box-shadow: $box-shadow;
       display: flex;
-      justify-content: center;
-      align-items: center; 
-      width: 250rpx;
-      height: 80rpx;
-      color: #fff;
-      font-size: 32rpx; 
-      background-color: $primary-color;
-      border-radius: 40rpx;
-      box-shadow: 0 4rpx 8rpx rgba($primary-color, 0.2);
+      align-items: center;
+      transition: all $transition-duration;
       
-      &::after {
-        border: none;
+      &:active {
+        transform: scale(0.98);
+        background-color: #f9f9f9;
+      }
+      
+      .search-icon {
+        font-family: "iconfont";
+        font-size: 36rpx;
+        color: $text-lighter;
+        margin-right: 15rpx;
+      }
+      
+      .search-placeholder {
+        font-size: 28rpx;
+        color: $text-lighter;
+      }
+    }
+    
+    // Navigation buttons
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 40rpx;
+      
+      .nav-button {
+        flex: 1;
+        margin: 0 10rpx;
+        background-color: $card-background;
+        border-radius: $border-radius-lg;
+        padding: 25rpx 20rpx;
+        box-shadow: $box-shadow;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all $transition-duration;
+        
+        &:active {
+          transform: translateY(3rpx);
+        }
+        
+        .button-icon {
+          width: 80rpx;
+          height: 80rpx;
+          border-radius: 40rpx;
+          margin-bottom: 15rpx;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          
+          .icon-text {
+            font-family: "iconfont";
+            font-size: 40rpx;
+          }
+        }
+        
+        .button-text {
+          font-size: 26rpx;
+          font-weight: bold;
+        }
+        
+        &.study-button {
+          .button-icon {
+            background-color: rgba(60, 137, 153, 0.1);
+            
+            .icon-text {
+              color: $primary-color;
+            }
+          }
+          
+          .button-text {
+            color: $primary-color;
+          }
+        }
+        
+        &.practice-button {
+          .button-icon {
+            background-color: rgba(255, 155, 80, 0.1);
+            
+            .icon-text {
+              color: $accent-color;
+            }
+          }
+          
+          .button-text {
+            color: $accent-color;
+          }
+        }
+        
+        &.recognition-button {
+          .button-icon {
+            background-color: rgba(24, 144, 255, 0.1);
+            
+            .icon-text {
+              color: #1890ff;
+            }
+          }
+          
+          .button-text {
+            color: #1890ff;
+          }
+        }
       }
     }
   }
-}  
+}
 </style>
