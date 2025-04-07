@@ -124,5 +124,68 @@ public class UserController {
         operations.getOperations().delete(token);
         return Result.success();
     }
+    @PostMapping("/checkUsername")
+    public Result checkUsername(@RequestBody Map<String, String> params) {
+        String username = params.get("username");
+
+        if (username == null || username.trim().isEmpty()) {
+            return Result.error("用户名不能为空");
+        }
+
+        User user = userService.findByUserName(username);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+
+        // 返回脱敏的用户信息
+        user.setPassword(null);  // 不返回密码
+        return Result.success(user);
+    }
+
+    /**
+     * 更新密码，支持忘记密码模式
+     * @param params 包含用户名、新密码和模式的参数
+     * @return 操作结果
+     */
+    @PostMapping("/updatePwd")
+    public Result updatePassword(@RequestBody Map<String, String> params) {
+        String username = params.get("username");
+        String newPwd = params.get("new_pwd");
+        String resetMode = params.get("reset_mode");
+
+        // 参数验证
+        if (username == null || newPwd == null) {
+            return Result.error("用户名和新密码不能为空");
+        }
+
+        try {
+            User user = userService.findByUserName(username);
+            if (user == null) {
+                return Result.error("用户不存在");
+            }
+
+            // 忘记密码模式，直接重置密码
+            if ("forgot".equals(resetMode)) {
+                userService.resetPasswordDirect(username, newPwd);
+                return Result.success();
+            }
+            // 普通修改密码模式需要验证旧密码
+            else {
+                String oldPwd = params.get("old_pwd");
+                if (oldPwd == null) {
+                    return Result.error("原密码不能为空");
+                }
+
+                if (!Md5Util.checkPassword(oldPwd, user.getPassword())) {
+                    return Result.error("原密码不正确");
+                }
+
+                userService.updatePwd(newPwd);
+                return Result.success();
+            }
+        } catch (Exception e) {
+            return Result.error("密码更新失败: " + e.getMessage());
+        }
+    }
 
 }

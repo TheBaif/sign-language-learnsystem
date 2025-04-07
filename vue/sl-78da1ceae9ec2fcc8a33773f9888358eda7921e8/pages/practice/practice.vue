@@ -3,9 +3,6 @@
     <!-- Header with progress bar -->
     <view class="practice-header">
       <view class="header-top">
-        <view class="back-button" @tap="navigateBack">
-          <text class="iconfont">&#xe679;</text>
-        </view>
         <text class="header-title">手语练习</text>
         <view class="score-display">
           <text class="score-text">{{ score }}</text>

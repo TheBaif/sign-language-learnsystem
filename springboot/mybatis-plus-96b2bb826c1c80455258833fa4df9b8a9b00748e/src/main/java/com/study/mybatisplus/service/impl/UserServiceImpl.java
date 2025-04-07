@@ -48,4 +48,11 @@ public class UserServiceImpl implements UserService {
         String username=(String) map.get("username");
         userMapper.updatePwd(Md5Util.getMD5String(newPwd),username);
     }
+
+
+    @Override
+    public void resetPasswordDirect(String username, String newPwd) {
+        String md5Password = Md5Util.getMD5String(newPwd);
+        userMapper.updatePwd(md5Password, username);
+    }
 }

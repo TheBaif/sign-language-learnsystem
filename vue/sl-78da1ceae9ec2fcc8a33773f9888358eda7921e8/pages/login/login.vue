@@ -9,9 +9,6 @@
     <form @submit="handleLogin">
       <view class="login-form">
         <view class="input-group">
-          <view class="input-icon">
-            <text class="iconfont">&#xe6a4;</text>
-          </view>
           <input 
             name="username"
             type="text" 
@@ -21,9 +18,6 @@
         </view>
         
         <view class="input-group">
-          <view class="input-icon">
-            <text class="iconfont">&#xe6a3;</text>
-          </view>
           <input 
             name="password"
             type="password" 
@@ -34,8 +28,13 @@
         
         <button class="login-btn" form-type="submit">登录</button>
         
-        <view class="register-link">
-          还没有账号？<text @tap="goToRegister">立即注册</text>
+        <view class="action-links">
+          <view class="register-link">
+            还没有账号？<text @tap="goToRegister">立即注册</text>
+          </view>
+          <view class="forgot-link">
+            <text @tap="goToForgotPassword">忘记密码？</text>
+          </view>
         </view>
       </view>
     </form>
@@ -125,6 +124,12 @@ export default {
     goToRegister() {
       uni.navigateTo({
         url: '/pages/register/register'
+      })
+    },
+    
+    goToForgotPassword() {
+      uni.navigateTo({
+        url: '/pages/forgot-password/forgot-password'
       })
     }
   }
@@ -219,16 +224,20 @@ export default {
       }
     }
     
-    .register-link {
-      text-align: center;
+    .action-links {
       margin-top: 40rpx;
-      font-size: 28rpx;
-      color: #666;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       
-      text {
-        color: #3C8999;
-        margin-left: 10rpx;
-        font-weight: bold;
+      .register-link, .forgot-link {
+        font-size: 28rpx;
+        color: #666;
+        
+        text {
+          color: #3C8999;
+          font-weight: bold;
+        }
       }
     }
   }

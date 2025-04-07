@@ -1,10 +1,10 @@
 <template>
   <view class="container" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
     <view class="header">
-      <image class="avatar" :src="userInfo.userPic || '/static/avatar.png'" @tap="navigateToUserProfile"/>
+      <image class="avatar" :src="userInfo.userPic" @tap="navigateToUserProfile"/>
     </view>
     
-    <view class="content" >
+    <view class="content">
       <view class="welcome">
         <text>欢迎使用手语学习应用</text>
         <text class="tip">向上滑动搜索,点击下方按钮开始学习</text>
@@ -136,7 +136,7 @@ export default {
         const token = uni.getStorageSync('token')
         if (!token) return
         
-        const res = await http.get('/userInfo')
+        const res = await http.get('/user/userInfo')
         if (res.data.code === 0) {
           this.userInfo = res.data.data
         }

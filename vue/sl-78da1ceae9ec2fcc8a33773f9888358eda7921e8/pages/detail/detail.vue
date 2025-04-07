@@ -76,7 +76,6 @@
 </template>
 <script>
 import http from '@/utils/request.js'
-import detailHelper from '@/utils/detailHelper.js'
 export default {
   data() {
     return {

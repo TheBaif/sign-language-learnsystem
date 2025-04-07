@@ -13,4 +13,6 @@ public interface UserService {
     void updateAvatar(String avatarUrl);
 
     void updatePwd(String newPwd);
+
+    void resetPasswordDirect(String username, String newPwd);
 }

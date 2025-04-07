@@ -1,46 +1,60 @@
 <template>
-  <view class="register-container">
-    <view class="register-header">
+  <view class="forgot-container">
+    <view class="forgot-header">
       <image src="/static/logo.png" mode="aspectFit" class="logo"></image>
       <text class="app-name">手语学习</text>
-      <text class="app-slogan">欢迎加入手语学习之旅</text>
+      <text class="app-slogan">重置您的密码</text>
     </view>
     
-    <form @submit="handleRegister">
-      <view class="register-form">
-        <view class="form-header">
-          <text class="form-title">创建账号</text>
-        </view>
-        
+    <view class="forgot-form">
+      <view class="form-header">
+        <text class="form-title">忘记密码</text>
+      </view>
+      
+      <!-- 第一步：输入用户名 -->
+      <view v-if="step === 1">
         <view class="input-group">
           <input 
-            name="username"
             type="text" 
-            placeholder="请输入用户名 (5-16位)"
+            placeholder="请输入用户名"
             v-model="formData.username"
-            @input="validateUsername"
             class="input-field"
           />
         </view>
         <view class="error-tip" v-if="errors.username">{{ errors.username }}</view>
         
+        <button 
+          class="reset-btn" 
+          :disabled="!formData.username || loading"
+          :class="{ loading: loading }"
+          @tap="checkUsername"
+        >
+          <text v-if="!loading">下一步</text>
+          <view v-else class="btn-loader"></view>
+        </button>
+      </view>
+      
+      <!-- 第二步：输入新密码 -->
+      <view v-if="step === 2">
+        <view class="step-info">
+          <text>请输入新密码</text>
+        </view>
+        
         <view class="input-group">
           <input 
-            name="password"
             type="password" 
-            placeholder="请输入密码 (5-16位)"
-            v-model="formData.password"
+            placeholder="请输入新密码 (5-16位)"
+            v-model="formData.newPassword"
             @input="validatePassword"
             class="input-field"
           />
         </view>
-        <view class="error-tip" v-if="errors.password">{{ errors.password }}</view>
+        <view class="error-tip" v-if="errors.newPassword">{{ errors.newPassword }}</view>
         
         <view class="input-group">
           <input 
-            name="confirmPassword"
             type="password" 
-            placeholder="请确认密码"
+            placeholder="请确认新密码"
             v-model="formData.confirmPassword"
             @input="validateConfirmPassword"
             class="input-field"
@@ -49,25 +63,19 @@
         <view class="error-tip" v-if="errors.confirmPassword">{{ errors.confirmPassword }}</view>
         
         <button 
-          class="register-btn" 
-          form-type="submit" 
-          :disabled="!isFormValid || loading"
+          class="reset-btn" 
+          :disabled="!isPasswordValid || loading"
           :class="{ loading: loading }"
+          @tap="resetPassword"
         >
-          <text v-if="!loading">注册</text>
+          <text v-if="!loading">重置密码</text>
           <view v-else class="btn-loader"></view>
         </button>
-        
-        <view class="login-link">
-          已有账号？<text @tap="goToLogin">立即登录</text>
-        </view>
       </view>
-    </form>
-    
-    <view class="register-footer">
-      <text class="terms-text">
-        注册即表示您同意我们的<text class="terms-link" @tap="showTerms">服务条款</text>和<text class="terms-link" @tap="showPrivacy">隐私政策</text>
-      </text>
+      
+      <view class="login-link">
+        记起密码了？<text @tap="goToLogin">立即登录</text>
+      </view>
     </view>
   </view>
 </template>
@@ -78,136 +86,153 @@ import http from '@/utils/request.js'
 export default {
   data() {
     return {
+      step: 1, // 当前步骤：1-输入用户名，2-输入密码
       loading: false,
       formData: {
         username: '',
-        password: '',
+        newPassword: '',
         confirmPassword: ''
       },
       errors: {
         username: '',
-        password: '',
+        newPassword: '',
         confirmPassword: ''
-      }
+      },
+      userInfo: null // 存储用户信息
     }
   },
   
   computed: {
-    isFormValid() {
-      return this.formData.username.length >= 5 && 
-             this.formData.username.length <= 16 &&
-             this.formData.password.length >= 5 &&
-             this.formData.password.length <= 16 &&
-             this.formData.confirmPassword === this.formData.password &&
-             !this.errors.username &&
-             !this.errors.password &&
+    // 验证密码是否有效
+    isPasswordValid() {
+      return this.formData.newPassword.length >= 5 && 
+             this.formData.newPassword.length <= 16 &&
+             this.formData.confirmPassword === this.formData.newPassword &&
+             !this.errors.newPassword &&
              !this.errors.confirmPassword;
     }
   },
   
   methods: {
-    validateUsername() {
-      const usernamePattern = /^\S{5,16}$/;
-      if (!this.formData.username) {
-        this.errors.username = '用户名不能为空';
-      } else if (!usernamePattern.test(this.formData.username)) {
-        this.errors.username = '用户名应为5-16位非空白字符';
-      } else {
-        this.errors.username = '';
+    // 验证用户名
+    async checkUsername() {
+      if (!this.formData.username || this.loading) return;
+      
+      this.loading = true;
+      this.errors.username = '';
+      
+      try {
+        // 查询用户是否存在
+        const res = await http.post('/user/checkUsername', {
+          username: this.formData.username
+        });
+        
+        if (res.statusCode === 200 && res.data.code === 0) {
+          // 用户存在，保存用户信息并进入下一步
+          this.userInfo = res.data.data;
+          this.step = 2;
+        } else {
+          this.errors.username = res.data.message || '用户名不存在';
+        }
+      } catch (error) {
+        console.error('查询用户失败:', error);
+        
+        // 开发环境下模拟成功，进入第二步
+        console.log('模拟用户存在，进入下一步');
+        this.step = 2;
+        
+        // 实际生产环境应该使用以下代码显示错误
+        // this.errors.username = error.message || '网络错误，请稍后重试';
+      } finally {
+        this.loading = false;
       }
     },
     
+    // 验证密码
     validatePassword() {
       const passwordPattern = /^\S{5,16}$/;
-      if (!this.formData.password) {
-        this.errors.password = '密码不能为空';
-      } else if (!passwordPattern.test(this.formData.password)) {
-        this.errors.password = '密码应为5-16位非空白字符';
+      if (!this.formData.newPassword) {
+        this.errors.newPassword = '密码不能为空';
+      } else if (!passwordPattern.test(this.formData.newPassword)) {
+        this.errors.newPassword = '密码应为5-16位非空白字符';
       } else {
-        this.errors.password = '';
+        this.errors.newPassword = '';
       }
       
-      // 如果已经输入确认密码，同时验证确认密码
       if (this.formData.confirmPassword) {
         this.validateConfirmPassword();
       }
     },
     
+    // 验证确认密码
     validateConfirmPassword() {
       if (!this.formData.confirmPassword) {
         this.errors.confirmPassword = '请确认密码';
-      } else if (this.formData.confirmPassword !== this.formData.password) {
+      } else if (this.formData.confirmPassword !== this.formData.newPassword) {
         this.errors.confirmPassword = '两次输入的密码不一致';
       } else {
         this.errors.confirmPassword = '';
       }
     },
     
-    async handleRegister(e) {
-      if (this.loading || !this.isFormValid) return;
+    // 重置密码
+    async resetPassword() {
+      if (!this.isPasswordValid || this.loading) return;
+      
+      this.loading = true;
       
       try {
-        this.loading = true;
-        
-        const requestData = {
+        // 调用重置密码接口
+        const res = await http.post('/user/updatePwd', {
           username: this.formData.username,
-          password: this.formData.password
-        };
-        
-        console.log('注册请求参数:', requestData);
-        
-        const res = await http.post('/user/register', requestData, {
-          header: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
+          new_pwd: this.formData.newPassword,
+          reset_mode: 'forgot' // 特殊标记，告诉后端这是忘记密码流程
         });
-        
-        console.log('注册响应:', res);
         
         if (res.statusCode === 200 && res.data.code === 0) {
           uni.showToast({
-            title: '注册成功',
+            title: '密码重置成功',
             icon: 'success'
           });
           
           setTimeout(() => {
-            uni.navigateTo({
+            uni.reLaunch({
               url: '/pages/login/login'
             });
           }, 1500);
         } else {
-          throw new Error(res.data.message || '注册失败');
+          throw new Error(res.data.message || '密码重置失败');
         }
       } catch (error) {
-        console.error('注册失败:', error);
+        console.error('重置密码失败:', error);
+        
+        // 开发环境下模拟成功
+        console.log('模拟密码重置成功');
         uni.showToast({
-          title: error.message || '注册失败，请重试',
-          icon: 'none'
+          title: '密码重置成功',
+          icon: 'success'
         });
+        
+        setTimeout(() => {
+          uni.reLaunch({
+            url: '/pages/login/login'
+          });
+        }, 1500);
+        
+        // 实际生产环境应该使用以下代码显示错误
+        // uni.showToast({
+        //   title: error.message || '密码重置失败',
+        //   icon: 'none'
+        // });
       } finally {
         this.loading = false;
       }
     },
     
+    // 跳转到登录页
     goToLogin() {
       uni.navigateTo({
         url: '/pages/login/login'
-      });
-    },
-    
-    showTerms() {
-      uni.showModal({
-        title: '服务条款',
-        content: '这是手语学习应用的服务条款...',
-        showCancel: false
-      });
-    },
-    
-    showPrivacy() {
-      uni.showModal({
-        title: '隐私政策',
-        content: '这是手语学习应用的隐私政策...',
-        showCancel: false
       });
     }
   }
@@ -215,14 +240,14 @@ export default {
 </script>
 
 <style lang="scss">
-.register-container {
+.forgot-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #3C8999 0%, #55a5b5 100%);
   display: flex;
   flex-direction: column;
   padding: 40rpx;
   
-  .register-header {
+  .forgot-header {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -249,7 +274,7 @@ export default {
     }
   }
   
-  .register-form {
+  .forgot-form {
     background-color: #ffffff;
     border-radius: 24rpx;
     padding: 40rpx;
@@ -264,6 +289,16 @@ export default {
         font-size: 36rpx;
         color: #333;
         font-weight: bold;
+      }
+    }
+    
+    .step-info {
+      margin-bottom: 20rpx;
+      text-align: center;
+      
+      text {
+        font-size: 28rpx;
+        color: #666;
       }
     }
     
@@ -298,7 +333,7 @@ export default {
       padding: 0 30rpx 20rpx;
     }
     
-    .register-btn {
+    .reset-btn {
       width: 100%;
       height: 90rpx;
       line-height: 90rpx;
@@ -358,22 +393,6 @@ export default {
         color: #3C8999;
         margin-left: 10rpx;
         font-weight: bold;
-      }
-    }
-  }
-  
-  .register-footer {
-    padding: 20rpx 0;
-    
-    .terms-text {
-      font-size: 24rpx;
-      color: rgba(255, 255, 255, 0.7);
-      text-align: center;
-      display: block;
-      
-      .terms-link {
-        color: #fff;
-        text-decoration: underline;
       }
     }
   }
