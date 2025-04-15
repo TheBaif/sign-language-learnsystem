@@ -2,9 +2,6 @@
   <view class="dashboard-container">
     <!-- 页面标题 -->
     <view class="dashboard-header">
-      <view class="back-button" @tap="navigateBack">
-        <text class="iconfont">&#xe679;</text>
-      </view>
       <view class="page-title">学习进度</view>
     </view>
     

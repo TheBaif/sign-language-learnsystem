@@ -346,7 +346,7 @@ export default {
       if (!this.progressData.totalSigns || this.progressData.totalSigns === 0) return 0
       
       // 假设总目标是100个手语
-      const totalTarget = 100
+      const totalTarget = 6700
       const progress = Math.min(100, Math.round((this.progressData.totalSigns / totalTarget) * 100))
       
       return progress

@@ -110,5 +110,13 @@ export default {
 		  url,
 		  method:'DELETE'
 	  })
+  },
+  put(url,data,options={}){
+	  return request({
+		  url,
+		  method:"PUT",
+		  data,
+		  ...options
+	  })
   }
 }

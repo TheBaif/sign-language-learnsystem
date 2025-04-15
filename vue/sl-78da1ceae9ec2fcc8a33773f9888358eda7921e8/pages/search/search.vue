@@ -121,10 +121,7 @@
       </view>
     </scroll-view>
     
-    <!-- Voice search button (future feature) -->
-    <view class="voice-search-button" @tap="showVoiceSearchFeature">
-      <text class="icon-mic">&#xe677;</text>
-    </view>
+    
   </view>
 </template>
 
