@@ -303,33 +303,6 @@ export default {
       } catch (error) {
         console.error('加载进度数据失败:', error)
         // 使用模拟数据保证页面正常显示
-        this.progressData = {
-          totalSigns: 28,
-          masteredSigns: 12,
-          averageProficiency: 65.4,
-          totalLearningTimeMinutes: 205,
-          consecutiveLearningDays: 3,
-          recommendedNextSigns: [
-            {
-              id: 1,
-              name: '你好',
-              pinyin: 'nǐ hǎo',
-              imageSrc: '/static/images/default-sign.png'
-            },
-            {
-              id: 2,
-              name: '谢谢',
-              pinyin: 'xiè xiè',
-              imageSrc: '/static/images/default-sign.png'
-            },
-            {
-              id: 3,
-              name: '再见',
-              pinyin: 'zài jiàn',
-              imageSrc: '/static/images/default-sign.png'
-            }
-          ]
-        }
       } finally {
         this.loadingProgress = false
       }

@@ -47,73 +47,9 @@
       </view>
     </view>
     
-    <!-- 学习时间统计 -->
-    <view v-if="!loading" class="learning-timeline">
-      <view class="section-header">
-        <text class="section-title">学习频率</text>
-      </view>
-      <view class="timeline-chart">
-        <!-- 学习频率图表 -->
-        <view class="daily-activity">
-          <view 
-            v-for="(day, index) in activityData" 
-            :key="index"
-            class="day-column"
-          >
-            <view 
-              class="activity-bar"
-              :style="{ height: day.height + '%' }"
-              :class="getActivityClass(day.value)"
-            ></view>
-            <text class="day-label">{{ day.label }}</text>
-          </view>
-        </view>
-        <text class="chart-note">最近7天学习情况</text>
-      </view>
-    </view>
     
-    <!-- 技能掌握热图 -->
-    <view v-if="!loading" class="skill-heatmap">
-      <view class="section-header">
-        <text class="section-title">技能掌握度</text>
-      </view>
-      <view class="heatmap-chart">
-        <!-- 技能掌握热图 -->
-        <view class="heatmap-container">
-          <view 
-            v-for="(category, index) in skillCategories" 
-            :key="index"
-            class="heatmap-category"
-          >
-            <text class="category-name">{{ category.name }}</text>
-            <view class="heatmap-cells">
-              <view 
-                v-for="(level, levelIndex) in 5" 
-                :key="levelIndex"
-                class="heatmap-cell"
-                :class="getCellClass(category.proficiency, level)"
-              ></view>
-            </view>
-          </view>
-        </view>
-        
-        <view class="heatmap-legend">
-          <view class="legend-item">
-            <view class="legend-cell level-1"></view>
-            <text>入门</text>
-          </view>
-          <view class="legend-item">
-            <view class="legend-cell level-3"></view>
-            <text>熟悉</text>
-          </view>
-          <view class="legend-item">
-            <view class="legend-cell level-5"></view>
-            <text>精通</text>
-          </view>
-        </view>
-      </view>
-    </view>
     
+   
     <!-- 继续学习建议 -->
     <view v-if="!loading && progressData.recommendedNextSigns" class="continue-learning">
       <view class="section-header">

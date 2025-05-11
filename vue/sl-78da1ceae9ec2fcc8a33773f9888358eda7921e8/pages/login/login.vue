@@ -78,70 +78,65 @@ export default {
   },
   methods: {
     async handleLogin(e) {
-      if(this.loading) return
-      
-      const formData = e.detail.value
-      
-      if (!formData.username || !formData.password) {
-        uni.showToast({
-          title: '请输入用户名和密码',
-          icon: 'none'
-        })
-        return
-      }
-      
-      try {
-        this.loading = true
-        console.log('Attempting login with:', formData.username)
-        
-        // Convert form data to URL-encoded format
-        const params = new URLSearchParams()
-        params.append('username', formData.username)
-        params.append('password', formData.password)
-        
-        const res = await http.post('/user/login', params.toString(), {
-          header: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        })
-        
-        console.log('Login response:', res)
-        
-        if (res.statusCode === 200 && res.data.code === 0) {
-          // Get token from response data
-          const token = res.data.data
-          if (!token) {
-            throw new Error('登录失败：未获取到token')
-          }
+          if(this.loading) return
           
-          // Store token in local storage
-          uni.setStorageSync('token', token)
-          console.log('Token stored in local storage:', token)
+          const formData = e.detail.value
           
-          uni.showToast({
-            title: '登录成功',
-            icon: 'success'
-          })
-          
-          // Navigate to home page after successful login
-          setTimeout(() => {
-            uni.reLaunch({
-              url: '/pages/index/index'
+          if (!formData.username || !formData.password) {
+            uni.showToast({
+              title: '请输入用户名和密码',
+              icon: 'none'
             })
-          }, 1500)
-        } else {
-          throw new Error(res.data.message || '登录失败')
-        }
-      } catch (error) {
-        console.error('Login failed:', error)
-        uni.showToast({
-          title: error.message || '登录失败，请重试',
-          icon: 'none'
-        })
-      } finally {
-        this.loading = false
-      }
-    },
+            return
+          }
+          
+          try {
+            this.loading = true
+            console.log('Attempting login with:', formData.username)
+            
+            // 使用传统方式构建URL编码参数
+            const params = `username=${encodeURIComponent(formData.username)}&password=${encodeURIComponent(formData.password)}`
+            
+            const res = await http.post('/user/login', params, {
+              header: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              }
+            })
+            
+            console.log('Login response:', res)
+            
+            if (res.statusCode === 200 && res.data.code === 0) {
+              const token = res.data.data
+              if (!token) {
+                throw new Error('登录失败：未获取到token')
+              }
+              
+              uni.setStorageSync('token', token)
+              console.log('Token stored in local storage:', token)
+              
+              uni.showToast({
+                title: '登录成功',
+                icon: 'success'
+              })
+              
+              setTimeout(() => {
+                uni.reLaunch({
+                  url: '/pages/index/index'
+                })
+              }, 1500)
+            } else {
+              throw new Error(res.data.message || '登录失败')
+            }
+          } catch (error) {
+            console.error('Login failed:', error)
+            uni.showToast({
+              title: error.message || '登录失败，请重试',
+              icon: 'none'
+            })
+          } finally {
+            this.loading = false
+          }
+        },
     
     goToRegister() {
       uni.navigateTo({
