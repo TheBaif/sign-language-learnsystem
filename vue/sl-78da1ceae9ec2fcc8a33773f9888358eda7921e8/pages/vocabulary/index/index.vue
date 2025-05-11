@@ -117,8 +117,6 @@
     
     <!-- Fixed Action Buttons -->
     <view class="fixed-actions">
-      <view class="action-button search-action" @tap="navigateToSearch">
-      </view>
       <view class="action-button add-action" @tap="navigateToCustomSign">
         <text class="iconfont icon-add">+</text>
       </view>

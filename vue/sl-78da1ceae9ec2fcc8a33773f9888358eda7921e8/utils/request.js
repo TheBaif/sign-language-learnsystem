@@ -1,6 +1,6 @@
 // Fixed utils/request.js
 const config = {
-  baseUrl: 'http://localhost:8080'
+  baseUrl: 'http://192.168.2.183:8080'
 }
 
 const request = (options = {}) => {

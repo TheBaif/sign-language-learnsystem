@@ -166,54 +166,54 @@ export default {
     },
     
     async handleRegister(e) {
-          if (this.loading || !this.isFormValid) return;
-          
-          try {
-            this.loading = true;
-            
-            // 修改这部分，不要直接传对象
-            // const requestData = {
-            //   username: this.formData.username,
-            //   password: this.formData.password
-            // };
-            
-            // 使用URL编码格式
-            const params = `username=${encodeURIComponent(this.formData.username)}&password=${encodeURIComponent(this.formData.password)}`;
-            
-            console.log('注册请求参数:', params);
-            
-            const res = await http.post('/user/register', params, {
-              header: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-              }
-            });
-            
-            console.log('注册响应:', res);
-            
-            if (res.statusCode === 200 && res.data.code === 0) {
-              uni.showToast({
-                title: '注册成功',
-                icon: 'success'
-              });
-              
-              setTimeout(() => {
-                uni.navigateTo({
-                  url: '/pages/login/login'
-                });
-              }, 1500);
-            } else {
-              throw new Error(res.data.message || '注册失败');
-            }
-          } catch (error) {
-            console.error('注册失败:', error);
-            uni.showToast({
-              title: error.message || '注册失败，请重试',
-              icon: 'none'
-            });
-          } finally {
-            this.loading = false;
+      if (this.loading || !this.isFormValid) return;
+    
+      try {
+        this.loading = true;
+    
+        // 修改这部分，不要直接传对象
+        // const requestData = {
+        //   username: this.formData.username,
+        //   password: this.formData.password
+        // };
+    
+        // 使用URL编码格式
+        const params = `username=${encodeURIComponent(this.formData.username)}&password=${encodeURIComponent(this.formData.password)}`;
+    
+        console.log('注册请求参数:', params);
+    
+        const res = await http.post('/user/register', params, {
+          header: {
+            'Content-Type': 'application/x-www-form-urlencoded'
           }
-        },
+        });
+    
+        console.log('注册响应:', res);
+    
+        if (res.statusCode === 200 && res.data.code === 0) {
+          uni.showToast({
+            title: '注册成功',
+            icon: 'success'
+          });
+    
+          setTimeout(() => {
+            uni.navigateTo({
+              url: '/pages/login/login'
+            });
+          }, 1500);
+        } else {
+          throw new Error(res.data.message || '注册失败');
+        }
+      } catch (error) {
+        console.error('注册失败:', error);
+        uni.showToast({
+          title: error.message || '注册失败，请重试',
+          icon: 'none'
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
     
     goToLogin() {
       uni.navigateTo({
