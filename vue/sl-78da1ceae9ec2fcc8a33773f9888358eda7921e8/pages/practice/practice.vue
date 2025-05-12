@@ -95,11 +95,7 @@
           </view>
         </view>
         
-        <view class="result-actions">
-          <button class="restart-button" @tap="resetPractice">再来一次</button>
-          <button class="back-button" @tap="navigateToHome">返回首页</button>
-        </view>
-      </view>
+    </view>
     </view>
   </view>
 </template>
